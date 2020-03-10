@@ -8,6 +8,14 @@ model BikeDynamicModel
   parameter Real Iz = 2380.7 "Yaw inertial (kgm^2)";
   parameter Real Caf = 0.12 "Front Tire cornering stiffness";
   parameter Real Car = 0.12 "Rear Tire cornering stiffness";
+  parameter Real x0=0 "initial longitudinal displacement";
+  parameter Real y0=0 "initial lateral displacement";
+  parameter Real X0=0 "initial position in x";
+  parameter Real Y0=0 "initial position in y";
+  parameter Real psi0=0 "initial yaw";
+  parameter Real dpsi0=0 "initial yaw rate";
+  parameter Real vx0=0 "initial velocity along x";
+  parameter Real vy0=0 "initial velocity along x";
   output Real af "Front Tire slip angle";
   output Real ar "Rear Tire slip angle";
   output Real x "longitudinal displacement in the body frame";
@@ -23,6 +31,14 @@ model BikeDynamicModel
   output Real Fcf "lateral tire force at the front tire in the frame of the front tire";
   output Real Fcr "lateral tire force at the rear tire in the frame of the rear tire";
 initial equation
+  x = x0;
+  y = y0;
+  X = X0;
+  Y = Y0;
+  dpsi = dpsi0;
+  vx = vx0;
+  vy = vy0;
+  psi = psi0;
 equation
   der(x) = vx;
   der(y) = vy;
@@ -30,17 +46,16 @@ equation
   
   der(vx) = dpsi*vy + a;
   der(vy) = -dpsi*vx + (2/m)*(Fcf * cos(deltaf) + Fcr);
-  
   der(dpsi) = (2/Iz)*(lf*Fcf - lr*Fcr);
   
   der(X) = vx*cos(psi) - vy*sin(psi);
-  der(Y) = vx*sin(psi) - vy*cos(psi);
+  der(Y) = vx*sin(psi) + vy*cos(psi);
   
-  Fcf = -Caf*af;
-  Fcr = -Car*ar;
+  Fcf = 2*Caf*af;
+  Fcr = 2*Car*(-ar);
   
   // Adapted from https://vtechworks.lib.vt.edu/bitstream/handle/10919/36615/Chapter2a.pdf
-  af = deltaf - ( lf*dpsi + vy )/vx;
-  ar = (lr*dpsi - vy)/vx;
+  af = deltaf - ( vy + lf*dpsi)/vx;
+  ar = (vy - lr*dpsi)/vx;
   
 end BikeDynamicModel;
