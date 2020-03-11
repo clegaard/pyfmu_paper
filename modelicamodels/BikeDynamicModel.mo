@@ -5,7 +5,7 @@ model BikeDynamicModel
   parameter Real lf=1.105 "distance from the the center of mass to the front (m)";
   parameter Real lr=1.738 "distance from the the center of mass to the rear (m)";
   parameter Real m=1292.2 "Vehicle's mass (kg)";
-  parameter Real Iz = 2380.7 "Yaw inertial (kgm^2)";
+  parameter Real Iz = 1 "Yaw inertial (kgm^2) (Not taken from the book)";
   parameter Real Caf = 0.12 "Front Tire cornering stiffness";
   parameter Real Car = 0.12 "Rear Tire cornering stiffness";
   parameter Real x0=0 "initial longitudinal displacement";
@@ -44,15 +44,17 @@ equation
   der(y) = vy;
   der(psi) = dpsi;
   
+  // Longitudinal dynamics are the same as the bike model.
   der(vx) = dpsi*vy + a;
-  der(vy) = -dpsi*vx + (2/m)*(Fcf * cos(deltaf) + Fcr);
+  
+  der(vy) = -dpsi*vx + (1/m)*(Fcf * cos(deltaf) + Fcr);
   der(dpsi) = (2/Iz)*(lf*Fcf - lr*Fcr);
   
   der(X) = vx*cos(psi) - vy*sin(psi);
   der(Y) = vx*sin(psi) + vy*cos(psi);
   
-  Fcf = 2*Caf*af;
-  Fcr = 2*Car*(-ar);
+  Fcf = Caf*af;
+  Fcr = Car*(-ar);
   
   // Adapted from https://vtechworks.lib.vt.edu/bitstream/handle/10919/36615/Chapter2a.pdf
   af = deltaf - ( vy + lf*dpsi)/vx;
