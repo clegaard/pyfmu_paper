@@ -1,6 +1,7 @@
 import math
 from collections import namedtuple
 from functools import reduce
+from typing import Any, Iterator
 
 from scipy.integrate import odeint
 import numpy as np
@@ -18,10 +19,6 @@ class Model:
         assert not hasattr(self, name)
         self._states.append(name)
         setattr(self, name, init)
-
-    @staticmethod
-    def _der(s):
-        return 'der_'+s
 
     def der(self, state, fun):
         assert hasattr(self, state)
@@ -63,12 +60,60 @@ class Model:
         nstates_models = sum([getattr(self, m).nstates() for m in self._models])
         return nstates_models + len(self._states)
 
-    def _pop(self, state, n):
-        assert n <= len(state)
-        popped = []
-        for i in range(n):
-            popped.append(state.pop(0))
-        return popped, state
+    def nsignals(self):
+        totallist = [1,
+                    len(self._states)*2,
+                    len(self._inputs),
+                    len(self._vars)
+                    ] + [getattr(self, m).nsignals() for m in self._models]
+
+        return sum(totallist)
+
+    def signal_names(self, prefix=''):
+        return self._fmap_signals(lambda s: prefix + s,
+                                  lambda c: prefix + c,
+                                  lambda m: getattr(self, m).signal_names(prefix + m + '.'))
+
+    """
+    Creates a flat state from the internal state and models
+    """
+    def initial(self):
+        return self._fmap_states(lambda s: getattr(self, s),
+                                 lambda m: getattr(self, m).initial())
+
+    def derivatives(self):
+        def model(npstate, t):
+            # Map state to internal state
+            self.update(npstate.tolist(), t)
+            return self._compute_derivatives()
+        return model
+
+    """
+        Creates a dictionary of signals.
+        Anything that changes over time is a signal
+        """
+
+    def signals(self, ts, state_traj):
+        assert len(ts) == len(state_traj)
+        names = self.signal_names()
+
+        # Init dict
+        res = {}
+        for n in names:
+            assert n not in res
+            res[n] = []
+
+        # Populate dict
+
+        signals_raw = [self._signals_from_state(s, t) for s, t in zip(state_traj, ts)]
+        for x in signals_raw:
+            for n, v in zip(names, x):
+                res[n].append(v)
+
+        for n in names:
+            assert len(res[n]) == len(state_traj)
+
+        return res
 
     """
     Takes a flat state, and propagates it to the internal models
@@ -90,92 +135,55 @@ class Model:
 
         assert len(state) == 0
 
-    def signal_names(self, prefix=''):
-        res = []
-        res.append('time')
-        for s in self._states:
-            res.append(s)
-            res.append(self._der(s))
-        for u in self._inputs:
-            res.append(u)
-        for v in self._vars:
-            res.append(v)
-
-        res_models = [getattr(self, m).signal_names(m + '.') for m in self._models]
-
-        total = [res]+res_models
-        total_flat = reduce(lambda a, b: a + b, total)
-        total_flat_prefix = [prefix + s for s in total_flat]
-        return total_flat_prefix
-
     def current_signals(self):
-        res = [self.time]
-        for s in self._states:
-            res.append(getattr(self, s))
-            res.append(getattr(self, self._der(s))())
-        for u in self._inputs:
-            res.append(getattr(self, u)())
-        for v in self._vars:
-            res.append(getattr(self, v)())
+        return self._fmap_signals(lambda s: getattr(self, s),
+                                  lambda c: getattr(self, c)(),
+                                  lambda m: getattr(self, m).current_signals())
 
-        res_models = [getattr(self, m).current_signals() for m in self._models]
-        total = [res] + res_models
-        total_flat = reduce(lambda a, b: a + b, total)
-        return total_flat
-
-    def signals_from_state(self, npstate, t):
+    def _signals_from_state(self, npstate, t):
         self.update(npstate.tolist(), t)
         return self.current_signals()
 
-    """
-    Creates a dictionary of signals.
-    Anything that changes over time is a signal
-    """
-    def signals(self, ts, state_traj):
-        assert len(ts) == len(state_traj)
-        names = self.signal_names()
-
-        # Init dict
-        res = {}
-        for n in names:
-            res[n] = []
-
-        # Populate dict
-
-        signals_raw = [self.signals_from_state(s, t) for s, t in zip(state_traj, ts)]
-        for x in signals_raw:
-            for n, v in zip(names, x):
-                res[n].append(v)
-
-        for n in names:
-            assert len(res[n]) == len(state_traj)
-
-        return res
-
-    """
-    Creates a flat state from the internal state and models
-    """
-    def initial(self):
-        internal_initial = [getattr(self, s) for s in self._states]
-        models_initials = [getattr(self, m).initial() for m in self._models]
-        total_state = [internal_initial] + models_initials
-        total_state_flat = reduce(lambda a, b: a+b, total_state)
-        assert len(total_state_flat) == self.nstates()
-        return total_state_flat
-
-    def compute_derivatives(self):
+    # noinspection PyProtectedMember
+    def _compute_derivatives(self):
         # Assumes that state has been updated.
-        ders = [getattr(self, self._der(s))() for s in self._states]
-        models_ders = [getattr(self, m).compute_derivatives() for m in self._models]
+        return self._fmap_states(lambda s: getattr(self, self._der(s))(),
+                                 lambda m: getattr(self, m)._compute_derivatives())
 
-        total = [ders] + models_ders
+    @staticmethod
+    def _der(s):
+        return 'der_'+s
+
+    @staticmethod
+    def _pop(state, n):
+        assert n <= len(state)
+        popped = []
+        for i in range(n):
+            popped.append(state.pop(0))
+        return popped, state
+
+    def _fmap_states(self, f_states, f_models):
+        internal_data = [f_states(s) for s in self._states]
+        models_data = [f_models(m) for m in self._models]
+        total = [internal_data] + models_data
         total_flat = reduce(lambda a, b: a + b, total)
         assert len(total_flat) == self.nstates()
         return total_flat
 
-    def derivatives(self):
-        def model(npstate, t):
-            # Map state to internal state
-            self.update(npstate.tolist(), t)
-            return self.compute_derivatives()
-        return model
+    def _fmap_signals(self, f_states, f_callable, f_models):
+        res = [f_states('time')]
+        for s in self._states:
+            res.append(f_states(s))
+            res.append(f_callable(self._der(s)))
+        for u in self._inputs:
+            res.append(f_callable(u))
+        for v in self._vars:
+            res.append(f_callable(v))
+
+        res_models = [f_models(m) for m in self._models]
+        total = [res] + res_models
+        total_flat = reduce(lambda a, b: a + b, total)
+
+        num = self.nsignals()
+        assert len(total_flat) == num
+        return total_flat
