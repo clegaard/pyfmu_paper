@@ -73,6 +73,12 @@ class TestModel(unittest.TestCase):
         # plt.plot(ts, sol)
         # plt.show()
 
+        results = m.signals(ts, sol)
+        self.assertEqual(len(results), 7+3+1)
+        self.assertTrue('md.der_x' in results)
+        self.assertTrue('md.F' in results)
+        self.assertTrue('s.F' in results)
+
     def test_autonomous_model(self):
         m = MassSpringDamperFlat()
         ts = np.arange(0, 10, 0.01)
@@ -80,12 +86,22 @@ class TestModel(unittest.TestCase):
         # plt.plot(ts, sol)
         # plt.show()
 
+        results = m.signals(ts, sol)
+        self.assertEqual(len(results), 7)
+        self.assertTrue('x' in results)
+        self.assertTrue('der_x' in results)
+        self.assertTrue('spring' in results)
+
+        # plt.plot(results['time'], results['x'])
+        # plt.plot(results['x'], results['v'])
+        # plt.show()
+
     def test_model_with_autonomous(self):
         m = MassSpringDamperFlat()
         m.v = 2.0
         self.assertEqual(m.der_x(), 2.0)
 
-        m.update([1.0, 3.0])
+        m.update([1.0, 3.0], 0.0)
         self.assertEqual(m.x, 1.0)
         self.assertEqual(m.v, 3.0)
 
