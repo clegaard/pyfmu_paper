@@ -17,6 +17,6 @@ class TesDynamicBikeModel(unittest.TestCase):
 
         plt.plot(bike.ts, [bike.deltaf(t) for t in bike.ts], label='driver')
         plt.plot(bike.ts, bike.ar, label='ar')
-        plt.plot(bike.ts, bike.X, label='X')
+        plt.plot(bike.ts, bike.Y, label='Y')
 
         plt.show()

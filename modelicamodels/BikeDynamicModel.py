@@ -11,8 +11,8 @@ class BikeDynamicModel:
         self.lr = 1.738  # distance from the the center of mass to the rear (m)";
         self.m = 1292.2  # Vehicle's mass (kg)";
         self.Iz = 1.0  # Yaw inertial (kgm^2) (Not taken from the book)";
-        self.Caf = 0.12  # Front Tire cornering stiffness";
-        self.Car = 0.12  # Rear Tire cornering stiffness";
+        self.Caf = 800.0  # Front Tire cornering stiffness";
+        self.Car = 800.0  # Rear Tire cornering stiffness";
         self.x0 = 0.0  # initial longitudinal displacement";
         self.y0 = 0.0  # initial lateral displacement";
         self.X0 = 0.0  # initial position in x";
