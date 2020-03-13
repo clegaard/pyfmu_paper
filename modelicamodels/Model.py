@@ -85,14 +85,14 @@ class Model:
         def model(npstate, t):
             # Map state to internal state
             self.update(npstate.tolist(), t)
-            return self._compute_derivatives()
+            ders = self._compute_derivatives()
+            return ders
         return model
 
     """
         Creates a dictionary of signals.
         Anything that changes over time is a signal
         """
-
     def signals(self, ts, state_traj):
         assert len(ts) == len(state_traj)
         names = self.signal_names()
@@ -114,6 +114,17 @@ class Model:
             assert len(res[n]) == len(state_traj)
 
         return res
+
+    """
+    Computes the behavior of the model
+    """
+    def simulate(self, stop_t, step_t):
+        ts = np.arange(0.0, stop_t, step_t)
+        # Note that bounding the step size of the solver is very important.
+        # Otherwise, important input trajectories might be missed. Took me a few good hours to figure this out xD
+        sol = odeint(self.derivatives(), self.initial(), ts, hmax=step_t)
+        signals = self.signals(ts, sol)
+        return signals
 
     """
     Takes a flat state, and propagates it to the internal models
@@ -147,8 +158,9 @@ class Model:
     # noinspection PyProtectedMember
     def _compute_derivatives(self):
         # Assumes that state has been updated.
-        return self._fmap_states(lambda s: getattr(self, self._der(s))(),
-                                 lambda m: getattr(self, m)._compute_derivatives())
+        res = self._fmap_states(lambda s: getattr(self, self._der(s))(),
+                                lambda m: getattr(self, m)._compute_derivatives())
+        return res
 
     @staticmethod
     def _der(s):

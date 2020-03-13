@@ -1,22 +1,45 @@
 import unittest
 import matplotlib.pyplot as plt
+from numpy.ma import arange
+from scipy.integrate import odeint
 
-from BikeDynamicModel import BikeDynamicModel
+from BikeModel import BikeModel
+from BikeModelWithDriver import BikeModelWithDriver
+from Driver import Driver
 
 
-class TesDynamicBikeModel(unittest.TestCase):
-    def test_basic_simulation(self):
-        bike = BikeDynamicModel()
+class TestExperiments(unittest.TestCase):
+    def test_driver(self):
+        m = Driver()
+        ts = arange(0, 10, 0.01)
+        sol = odeint(m.derivatives(), m.initial(), ts)
 
-        bike.a = lambda t: 0.0
-        bike.deltaf = lambda t: 0.8 * t / 5.0 if t < 5.0 else 0.0
+        results = m.signals(ts, sol)
 
-        bike.vx0 = 1.0
-
-        bike.simulate(10, 0.01)
-
-        plt.plot(bike.ts, [bike.deltaf(t) for t in bike.ts], label='driver')
-        plt.plot(bike.ts, bike.ar, label='ar')
-        plt.plot(bike.ts, bike.Y, label='Y')
-
+        plt.plot(results['time'], results['steering'])
         plt.show()
+
+    def test_bike_model_fixed_steering(self):
+        m = BikeModel()
+        m.deltaf = lambda: 0.4 if m.time > 5.0 else 0.0
+        ts = arange(0, 200, 0.01)
+        sol = odeint(m.derivatives(), m.initial(), ts)
+        results = m.signals(ts, sol)
+
+        _, (p1, p2) = plt.subplots(1, 2)
+        p1.plot(results['time'], results['psi'])
+        p2.plot(results['x'], results['y'])
+        plt.show()
+
+    def test_bike_model_with_driver(self):
+        m = BikeModelWithDriver()
+
+        results = m.simulate(200, 0.01)
+
+        _, (p1, p2) = plt.subplots(1, 2)
+
+        p1.plot(results['time'], results['driver.steering'])
+        p2.plot(results['bike.x'], results['bike.y'])
+        plt.show()
+
+

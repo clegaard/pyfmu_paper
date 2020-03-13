@@ -11,9 +11,7 @@ model BikeModel
   output Real y "y coordinate (m)";
   output Real psi "Inertial orientation of the model (rad)";
   output Real v "speed along psi (m/s)";
-  output Real beta "is the angle of the current velocity vector
-of the center of mass with respect to the longitudinal axis of
-the car (rad)";
+  output Real beta "is the angle of the current velocity vector of the center of mass with respect to the longitudinal axis of the car (rad)";
   input Real a "acceleration along v (m/s^2)";
   input Real deltaf "steering angle at the front wheel (rad)";
 initial equation

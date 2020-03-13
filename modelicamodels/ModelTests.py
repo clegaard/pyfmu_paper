@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
-
 from Model import Model
 
 
@@ -46,12 +45,30 @@ class MassSpringDamperFlat(Model):
         self.state('x', 0.0)
         self.state('v', 1.0)
 
+        self.input('F')
+
         self.parameter('k', 1.0)
         self.parameter('d', 1.0)
         self.var('spring', lambda: self.k * self.x)
         self.var('damper', lambda: self.d * self.v)
         self.der('x', lambda: self.v)
-        self.der('v', lambda: - self.damper() - self.spring())
+        self.der('v', lambda: self.F() - self.damper() - self.spring())
+
+
+class TimeDepInput(Model):
+    def __init__(self):
+        super().__init__()
+        self.var('F', lambda: 0.0 if self.time < 4.0 else 4.0)
+
+
+class MSDTimeDep(Model):
+    def __init__(self):
+        super().__init__()
+
+        self.model('msd', MassSpringDamperFlat())
+        self.model('u', TimeDepInput())
+
+        self.connect(self.msd, 'F', self.u, 'F')
 
 
 class TestModel(unittest.TestCase):
@@ -87,7 +104,7 @@ class TestModel(unittest.TestCase):
         # plt.show()
 
         results = m.signals(ts, sol)
-        self.assertEqual(len(results), 7)
+        self.assertEqual(len(results), 8)
         self.assertTrue('x' in results)
         self.assertTrue('der_x' in results)
         self.assertTrue('spring' in results)
@@ -119,6 +136,14 @@ class TestModel(unittest.TestCase):
             self.assertEqual(len(x1), len(x2))
             for i in range(len(x1)):
                 self.assertTrue(np.isclose(x1[i], x2[i]))
+
+    def test_msd_timedep(self):
+        m = MSDTimeDep()
+        ts = np.arange(0, 10, 0.01)
+        sol = odeint(m.derivatives(), m.initial(), ts)
+        # plt.plot(ts, sol)
+        # plt.show()
+        self.assertGreaterEqual(sol[-1, 0], 3)
 
     def test_pop(self):
         a = [1, 2, 3, 4]
