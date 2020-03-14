@@ -86,11 +86,11 @@ class Model:
     def connect(self, in_m, in_p, out_m, out_p):
         assert self._under_construction
 
-        def resolve():
+        def resolve(d=None):
             trg = getattr(out_m, out_p)
             # works for states, parameters, and also other inputs
             if callable(trg):
-                return trg()
+                return trg(d)
             else:
                 return trg
 
@@ -236,8 +236,7 @@ class Model:
             if d is None:
                 return self._current_state_values[name]
             else:
-                assert False, "TODO"
-                self.signals[name][-1]
+                return self._delayed_signal_value(name, d)
 
         return signal
 
@@ -248,9 +247,26 @@ class Model:
             if d is None:
                 return fun()
             else:
-                assert False, "TODO"
+                return self._delayed_signal_value(name, d)
 
         return signal
+
+    def _delayed_signal_value(self, name, d):
+        assert name in self.signals.keys()
+        t = self.time()
+        ts = max(0, t+d)  # if -d goes beyond, we set ts=0
+        idx = self._earliest_time(ts)
+        return self.signals[name][idx]
+
+    """
+    Searches for the index of timestamp that is closest (from the left) to the argument t.
+    Examples:
+        [0,1,2,3,4] , 1.2 -> 1
+        [0,1,2,3,4] , 4.2 -> 4
+    """
+    def _earliest_time(self, t):
+        ts = self.signals['time']
+        return self._find_sup(t, ts)
 
     def _signals_from_state(self, npstate, t):
         self._update(npstate.tolist(), t)
@@ -336,3 +352,12 @@ class Model:
             else:
                 assert key in self._inputs or key in self._parameters
                 super().__setattr__(key, value)
+
+    @staticmethod
+    def _find_sup(t, ts):
+        idx = len(ts) - 1  # Start at the end
+        while ts[idx] > t and idx > 0:
+            idx -= 1
+        assert (idx == len(ts) - 1 or idx == 0 or (ts[idx] <= t and ts[idx + 1] > t))
+        assert 0 <= idx <= len(ts)-1
+        return idx

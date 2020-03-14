@@ -1,10 +1,13 @@
 import unittest
+from bisect import bisect
+
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import odeint
 
-from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous
+from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous, \
+    DelayExampleScenario
 from ForwardEuler import ForwardEuler
+from Model import Model
 
 
 class TestModel(unittest.TestCase):
@@ -122,3 +125,17 @@ class TestModel(unittest.TestCase):
 
         # plt.plot(m.signals['time'], m.signals['x'])
         # plt.show()
+
+    def test_delay(self):
+        m = DelayExampleScenario()
+        ForwardEuler().simulate(m, 10, 0.01)
+        plt.plot(m.signals['time'], m.u.signals['F'])
+        plt.plot(m.signals['time'], m.d.signals['d'])
+        plt.show()
+
+    def test_search(self):
+        sample = [0, 1, 2, 3, 4, 5, 6]
+        self.assertEqual(0, Model._find_sup(0.1, sample))
+        self.assertEqual(0, Model._find_sup(-1, sample))
+        self.assertEqual(6, Model._find_sup(6.2, sample))
+        self.assertEqual(3, Model._find_sup(3.8, sample))

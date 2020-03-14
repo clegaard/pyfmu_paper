@@ -68,11 +68,13 @@ class MSDAutonomous(Model):
 
         self.save()
 
+
 class TimeDepInput(Model):
     def __init__(self):
         super().__init__()
         self.var('F', lambda: 0.0 if self.time() < 4.0 else 4.0)
         self.save()
+
 
 class DelayExample(Model):
     def __init__(self):
@@ -80,6 +82,18 @@ class DelayExample(Model):
         self.input('u')
         self.var('d', lambda: self.u(-1.0))
         self.save()
+
+
+class DelayExampleScenario(Model):
+    def __init__(self):
+        super().__init__()
+        self.model('u', TimeDepInput())
+        self.model('d', DelayExample())
+
+        self.connect(self.d, 'u', self.u, 'F')
+
+        self.save()
+
 
 class MSDTimeDep(Model):
     def __init__(self):
