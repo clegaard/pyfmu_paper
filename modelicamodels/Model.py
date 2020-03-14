@@ -85,6 +85,8 @@ class Model:
 
     def connect(self, in_m, in_p, out_m, out_p):
         assert self._under_construction
+        assert in_p in in_m._inputs
+        assert out_p in out_m._vars or out_p in out_m._states
 
         def resolve(d=None):
             trg = getattr(out_m, out_p)
@@ -245,9 +247,11 @@ class Model:
 
         def signal(d=None):
             if d is None:
-                return fun()
+                value = fun()
             else:
-                return self._delayed_signal_value(name, d)
+                value = self._delayed_signal_value(name, d)
+            assert value is not None
+            return value
 
         return signal
 
@@ -256,7 +260,8 @@ class Model:
         t = self.time()
         ts = max(0, t+d)  # if -d goes beyond, we set ts=0
         idx = self._earliest_time(ts)
-        return self.signals[name][idx]
+        value = self.signals[name][idx]
+        return value
 
     """
     Searches for the index of timestamp that is closest (from the left) to the argument t.

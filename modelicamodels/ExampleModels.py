@@ -105,3 +105,12 @@ class MSDTimeDep(Model):
         self.connect(self.msd, 'F', self.u, 'F')
 
         self.save()
+
+
+class TwoMSDComparison(Model):
+    def __init__(self):
+        super().__init__()
+
+        self.model('m1', MassSpringDamperFlat())
+        self.model('m2', MassSpringDamper())
+        self.save()

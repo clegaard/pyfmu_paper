@@ -22,20 +22,21 @@ class BikeDynamicModel(Model):
         self.state('dpsi', 0.0) # Yaw rate";
         self.input('a') # longitudinal acceleration";
         self.input('deltaf') # steering angle at the front wheel";
-        self.var('af', lambda: self.deltaf() - ( self.vy + self.lf*self.dpsi)/self.vx) # Front Tire slip angle";
-        self.var('ar', lambda: (self.vy - self.lr*self.dpsi)/self.vx) # Rear Tire slip angle";
+        self.var('af', lambda: self.deltaf() - ( self.vy() + self.lf*self.dpsi())/self.vx()) # Front Tire slip angle";
+        self.var('ar', lambda: (self.vy() - self.lr*self.dpsi())/self.vx()) # Rear Tire slip angle";
         self.var('Fcf', lambda: self.Caf*self.af()) # lateral tire force at the front tire in the frame of the front tire";
         self.var('Fcr', lambda: self.Car*(-self.ar())) # lateral tire force at the rear tire in the frame of the rear tire";
 
-        self.der('x', lambda: self.vx)
-        self.der('y', lambda: self.vy)
-        self.der('psi', lambda: self.dpsi)
-        self.der('vx', lambda: self.dpsi*self.vy + self.a())
-        self.der('vy', lambda: -self.dpsi*self.vx + (1/self.m)*(self.Fcf() * math.cos(self.deltaf()) + self.Fcr()))
+        self.der('x', lambda: self.vx())
+        self.der('y', lambda: self.vy())
+        self.der('psi', lambda: self.dpsi())
+        self.der('vx', lambda: self.dpsi()*self.vy() + self.a())
+        self.der('vy', lambda: -self.dpsi()*self.vx() + (1/self.m)*(self.Fcf() * math.cos(self.deltaf()) + self.Fcr()))
         self.der('dpsi', lambda: (2/self.Iz)*(self.lf*self.Fcf() - self.lr*self.Fcr()))
-        self.der('X', lambda: self.vx*math.cos(self.psi) - self.vy*math.sin(self.psi))
-        self.der('Y', lambda: self.vx*math.sin(self.psi) + self.vy*math.cos(self.psi))
+        self.der('X', lambda: self.vx()*math.cos(self.psi()) - self.vy()*math.sin(self.psi()))
+        self.der('Y', lambda: self.vx()*math.sin(self.psi()) + self.vy()*math.cos(self.psi()))
 
+        self.save()
 
 
 

@@ -19,10 +19,11 @@ class BikeModel(Model):
         self.input('deltaf')  # steering angle at the front wheel";
         # "steering angle at the front wheel (rad)";
         self.var('beta', lambda: math.atan((self.lr/(self.lf + self.lr)) * math.tan(self.deltaf())))
-        self.der('x', lambda: self.v * math.cos(self.psi + self.beta()))
-        self.der('y', lambda: self.v * math.sin(self.psi + self.beta()))
+        self.der('x', lambda: self.v() * math.cos(self.psi() + self.beta()))
+        self.der('y', lambda: self.v() * math.sin(self.psi() + self.beta()))
         self.der('psi', self.get_der_psi)
         self.der('v', lambda: self.a())
+        self.save()
 
     def get_der_psi(self):
-        return (self.v/self.lr) * math.sin(self.beta())
+        return (self.v()/self.lr) * math.sin(self.beta())

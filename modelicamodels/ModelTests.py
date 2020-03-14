@@ -1,13 +1,12 @@
 import unittest
-from bisect import bisect
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous, \
-    DelayExampleScenario
-from ForwardEuler import ForwardEuler
+    DelayExampleScenario, TwoMSDComparison
 from Model import Model
+from SciPySolver import SciPySolver
+from StepRK45 import StepRK45
 
 
 class TestModel(unittest.TestCase):
@@ -24,7 +23,7 @@ class TestModel(unittest.TestCase):
         init = m.state_vector()
         self.assertEqual(len(init), 3+1+1)
 
-        ForwardEuler().simulate(m, 10, 0.01)
+        SciPySolver(StepRK45).simulate(m, 10, 0.01)
 
         self.assertEqual(len(m.signals), 2) # time and der_time
         self.assertEqual(len(m.md.signals), 8)
@@ -38,7 +37,7 @@ class TestModel(unittest.TestCase):
 
     def test_autonomous_model(self):
         m = MassSpringDamperFlat()
-        ForwardEuler().simulate(m, 10.0, 0.01)
+        SciPySolver(StepRK45).simulate(m, 10.0, 0.01)
         # plt.plot(m.signals['time'], m.signals['x'])
         # plt.show()
 
@@ -59,21 +58,19 @@ class TestModel(unittest.TestCase):
         self.assertEqual(m.v(), 3.0)
 
     def test_similar_states(self):
-        m1 = MassSpringDamperFlat()
-        m2 = MassSpringDamper()
+        m = TwoMSDComparison()
 
-        ForwardEuler().simulate(m1, 10.0, 0.01)
-        ForwardEuler().simulate(m2, 10.0, 0.01)
+        SciPySolver(StepRK45).simulate(m, 10.0, 0.01)
 
-        signals = ['x','v', 'der_x', 'der_v', 'time']
+        signals = ['x','v', 'der_x', 'der_v']
         for s in signals:
-            for a, b in zip(m1.signals[s], m2.md.signals[s]):
+            for a, b in zip(m.m1.signals[s], m.m2.md.signals[s]):
                 self.assertAlmostEqual(a, b)
 
 
     def test_msd_timedep(self):
         m = MSDTimeDep()
-        ForwardEuler().simulate(m, 10, 0.01)
+        SciPySolver(StepRK45).simulate(m, 10, 0.01)
         # plt.plot(m.u.signals['time'], m.u.signals['F'])
         # plt.show()
         self.assertGreaterEqual(m.u.signals['F'][-1], 3)
@@ -120,7 +117,7 @@ class TestModel(unittest.TestCase):
         m.reset()
         m.v = 1.0
 
-        solver = ForwardEuler()
+        solver = SciPySolver(StepRK45)
         solver.simulate(m, 10.0, 0.01)
 
         # plt.plot(m.signals['time'], m.signals['x'])
@@ -128,10 +125,12 @@ class TestModel(unittest.TestCase):
 
     def test_delay(self):
         m = DelayExampleScenario()
-        ForwardEuler().simulate(m, 10, 0.01)
-        plt.plot(m.signals['time'], m.u.signals['F'])
-        plt.plot(m.signals['time'], m.d.signals['d'])
-        plt.show()
+        SciPySolver(StepRK45).simulate(m, 4.3, 0.01)
+        # plt.plot(m.signals['time'], m.u.signals['F'])
+        # plt.plot(m.signals['time'], m.d.signals['d'])
+        # plt.show()
+        self.assertAlmostEqual(m.u.signals['F'][-1], 4.0)
+        self.assertAlmostEqual(m.d.signals['d'][-1], 0.0)
 
     def test_search(self):
         sample = [0, 1, 2, 3, 4, 5, 6]
