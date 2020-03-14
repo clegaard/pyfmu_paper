@@ -12,7 +12,7 @@ class TestExperiments(unittest.TestCase):
     def test_driver(self):
         m = Driver()
         ts = arange(0, 10, 0.01)
-        sol = odeint(m.derivatives(), m.initial(), ts)
+        sol = odeint(m.derivatives(), m.state_vector(), ts)
 
         results = m.signals(ts, sol)
 
@@ -23,7 +23,7 @@ class TestExperiments(unittest.TestCase):
         m = BikeModel()
         m.deltaf = lambda: 0.4 if m.time > 5.0 else 0.0
         ts = arange(0, 200, 0.01)
-        sol = odeint(m.derivatives(), m.initial(), ts)
+        sol = odeint(m.derivatives(), m.state_vector(), ts)
         results = m.signals(ts, sol)
 
         _, (p1, p2) = plt.subplots(1, 2)

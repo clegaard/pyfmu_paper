@@ -1,74 +1,9 @@
 import unittest
-
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import odeint
-import matplotlib.pyplot as plt
-from Model import Model
 
-
-class MassDamper(Model):
-    def __init__(self):
-        super().__init__()
-        self.state('x', 0.0)
-        self.state('vx', 1.0)
-
-        self.parameter('d', 1.0)
-        self.var('friction', lambda: self.d * self.vx)
-        self.input('F')
-        self.der('x', lambda: self.vx)
-        self.der('vx', lambda: self.F() - self.friction())
-
-
-class Spring(Model):
-    def __init__(self):
-        super().__init__()
-
-        self.input('x')
-        self.parameter('k', 1.0)
-        self.var('F', lambda: - self.k * self.x())
-
-
-class MassSpringDamper(Model):
-    def __init__(self):
-        super().__init__()
-
-        self.model('md', MassDamper())
-        self.model('s', Spring())
-
-        self.connect(self.s, 'x', self.md, 'x')
-        self.connect(self.md, 'F', self.s, 'F')
-
-
-class MassSpringDamperFlat(Model):
-    def __init__(self):
-        super().__init__()
-        self.state('x', 0.0)
-        self.state('v', 1.0)
-
-        self.input('F')
-
-        self.parameter('k', 1.0)
-        self.parameter('d', 1.0)
-        self.var('spring', lambda: self.k * self.x)
-        self.var('damper', lambda: self.d * self.v)
-        self.der('x', lambda: self.v)
-        self.der('v', lambda: self.F() - self.damper() - self.spring())
-
-
-class TimeDepInput(Model):
-    def __init__(self):
-        super().__init__()
-        self.var('F', lambda: 0.0 if self.time < 4.0 else 4.0)
-
-
-class MSDTimeDep(Model):
-    def __init__(self):
-        super().__init__()
-
-        self.model('msd', MassSpringDamperFlat())
-        self.model('u', TimeDepInput())
-
-        self.connect(self.msd, 'F', self.u, 'F')
+from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous
 
 
 class TestModel(unittest.TestCase):
@@ -81,12 +16,12 @@ class TestModel(unittest.TestCase):
 
     def test_msd(self):
         m = MassSpringDamper()
-        init = m.initial()
+        init = m.state_vector()
         self.assertEqual(m.nstates(), 2)
         self.assertEqual(len(init), 2)
 
         ts = np.arange(0, 10, 0.01)
-        sol = odeint(m.derivatives(), m.initial(), ts)
+        sol = odeint(m.derivatives(), m.state_vector(), ts)
         # plt.plot(ts, sol)
         # plt.show()
 
@@ -99,7 +34,7 @@ class TestModel(unittest.TestCase):
     def test_autonomous_model(self):
         m = MassSpringDamperFlat()
         ts = np.arange(0, 10, 0.01)
-        sol = odeint(m.derivatives(), m.initial(), ts)
+        sol = odeint(m.derivatives(), m.state_vector(), ts)
         # plt.plot(ts, sol)
         # plt.show()
 
@@ -126,8 +61,8 @@ class TestModel(unittest.TestCase):
         m1 = MassSpringDamperFlat()
         m2 = MassSpringDamper()
         ts = np.arange(0, 10, 0.01)
-        sol1 = odeint(m1.derivatives(), m1.initial(), ts)
-        sol2 = odeint(m2.derivatives(), m2.initial(), ts)
+        sol1 = odeint(m1.derivatives(), m1.state_vector(), ts)
+        sol2 = odeint(m2.derivatives(), m2.state_vector(), ts)
         # plt.plot(ts, sol1)
         # plt.plot(ts, sol2)
         # plt.show()
@@ -139,11 +74,10 @@ class TestModel(unittest.TestCase):
 
     def test_msd_timedep(self):
         m = MSDTimeDep()
-        ts = np.arange(0, 10, 0.01)
-        sol = odeint(m.derivatives(), m.initial(), ts)
-        # plt.plot(ts, sol)
-        # plt.show()
-        self.assertGreaterEqual(sol[-1, 0], 3)
+        ts, sol = m.simulate(10, 0.01)
+        plt.plot(ts, sol[0])
+        plt.show()
+        self.assertGreaterEqual(sol[0][-1], 3)
 
     def test_pop(self):
         a = [1, 2, 3, 4]
@@ -151,3 +85,21 @@ class TestModel(unittest.TestCase):
         self.assertEqual(2, a.pop(0))
         self.assertEqual(3, a.pop(0))
         self.assertEqual(4, a.pop(0))
+
+    def test_msd_state_signals(self):
+        m = MSDAutonomous()
+
+        init = m.state_vector()
+        self.assertEqual(m.nstates(), 2)
+        self.assertEqual(len(init), 2)
+        self.assertAlmostEqual(init[0], 0.0)
+        self.assertAlmostEqual(init[1], 1.0)
+
+        m.x = 1.0
+        m.v = 0.0
+        new = m.state_vector()
+
+        self.assertAlmostEqual(new[0], 1.0)
+        self.assertAlmostEqual(new[1], 0.0)
+
+

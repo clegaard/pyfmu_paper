@@ -6,12 +6,12 @@ from Model import Model
 class BikeDynamicModel(Model):
     def __init__(self):
         super().__init__()
-        self.parameter('lf',1.105) # distance from the the center of mass to the front (m)";
-        self.parameter('lr',1.738) # distance from the the center of mass to the rear (m)";
-        self.parameter('m',1292.2) # Vehicle's mass (kg)";
-        self.parameter('Iz ', 1) # Yaw inertial (kgm^2) (Not taken from the book)";
-        self.parameter('Caf ', 800) # Front Tire cornering stiffness";
-        self.parameter('Car ', 800) # Rear Tire cornering stiffness";
+        self.parameter('lf', 1.105) # distance from the the center of mass to the front (m)";
+        self.parameter('lr', 1.738) # distance from the the center of mass to the rear (m)";
+        self.parameter('m', 1292.2) # Vehicle's mass (kg)";
+        self.parameter('Iz', 1) # Yaw inertial (kgm^2) (Not taken from the book)";
+        self.parameter('Caf', 800) # Front Tire cornering stiffness";
+        self.parameter('Car', 800) # Rear Tire cornering stiffness";
         self.state('x', 0.0) # longitudinal displacement in the body frame";
         self.state('X', 0.0) # x coordinate in the reference frame";
         self.state('Y', 0.0) # x coordinate in the reference frame";
