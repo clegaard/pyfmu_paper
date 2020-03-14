@@ -4,80 +4,77 @@ import numpy as np
 from scipy.integrate import odeint
 
 from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous
+from ForwardEuler import ForwardEuler
 
 
 class TestModel(unittest.TestCase):
     def test_some_model(self):
         m = MassDamper()
 
-        self.assertEqual(m.x, 0.0)
-        self.assertEqual(m.vx, 1.0)
-        self.assertEqual(len(m._states), 2)
+        self.assertEqual(m.x(), 0.0)
+        self.assertEqual(m.v(), 1.0)
+        self.assertEqual(len(m._states), 2+1)
 
     def test_msd(self):
         m = MassSpringDamper()
+        self.assertEqual(m.nstates(), 3+1+1)
         init = m.state_vector()
-        self.assertEqual(m.nstates(), 2)
-        self.assertEqual(len(init), 2)
+        self.assertEqual(len(init), 3+1+1)
 
-        ts = np.arange(0, 10, 0.01)
-        sol = odeint(m.derivatives(), m.state_vector(), ts)
-        # plt.plot(ts, sol)
+        ForwardEuler().simulate(m, 10, 0.01)
+
+        self.assertEqual(len(m.signals), 2) # time and der_time
+        self.assertEqual(len(m.md.signals), 8)
+        self.assertEqual(len(m.s.signals), 4)
+        self.assertTrue('der_x' in m.md.signals)
+        self.assertTrue('F' in m.md.signals)
+        self.assertTrue('F' in m.s.signals)
+        self.assertGreaterEqual(0.1, m.md.signals['x'][-1])
+        # plt.plot(m.signals['time'], m.md.signals['x'])
         # plt.show()
-
-        results = m.signals(ts, sol)
-        self.assertEqual(len(results), 7+3+1)
-        self.assertTrue('md.der_x' in results)
-        self.assertTrue('md.F' in results)
-        self.assertTrue('s.F' in results)
 
     def test_autonomous_model(self):
         m = MassSpringDamperFlat()
-        ts = np.arange(0, 10, 0.01)
-        sol = odeint(m.derivatives(), m.state_vector(), ts)
-        # plt.plot(ts, sol)
+        ForwardEuler().simulate(m, 10.0, 0.01)
+        # plt.plot(m.signals['time'], m.signals['x'])
         # plt.show()
 
-        results = m.signals(ts, sol)
-        self.assertEqual(len(results), 8)
-        self.assertTrue('x' in results)
-        self.assertTrue('der_x' in results)
-        self.assertTrue('spring' in results)
+        self.assertGreaterEqual(0.1, m.signals['x'][-1])
 
-        # plt.plot(results['time'], results['x'])
-        # plt.plot(results['x'], results['v'])
-        # plt.show()
+        self.assertTrue('x' in m.signals)
+        self.assertTrue('der_x' in m.signals)
+        self.assertTrue('spring' in m.signals)
 
     def test_model_with_autonomous(self):
         m = MassSpringDamperFlat()
         m.v = 2.0
-        self.assertEqual(m.der_x(), 2.0)
+        self.assertEqual(m._state_derivatives['x'](), 2.0)
 
-        m.update([1.0, 3.0], 0.0)
-        self.assertEqual(m.x, 1.0)
-        self.assertEqual(m.v, 3.0)
+        m._update([1.0, 1.0, 3.0], 0.0)
+        self.assertEqual(m.time(), 1.0)
+        self.assertEqual(m.x(), 1.0)
+        self.assertEqual(m.v(), 3.0)
 
     def test_similar_states(self):
         m1 = MassSpringDamperFlat()
         m2 = MassSpringDamper()
-        ts = np.arange(0, 10, 0.01)
-        sol1 = odeint(m1.derivatives(), m1.state_vector(), ts)
-        sol2 = odeint(m2.derivatives(), m2.state_vector(), ts)
-        # plt.plot(ts, sol1)
-        # plt.plot(ts, sol2)
-        # plt.show()
 
-        for x1, x2 in zip(sol1, sol2):
-            self.assertEqual(len(x1), len(x2))
-            for i in range(len(x1)):
-                self.assertTrue(np.isclose(x1[i], x2[i]))
+        ForwardEuler().simulate(m1, 10.0, 0.01)
+        ForwardEuler().simulate(m2, 10.0, 0.01)
+
+        signals = ['x','v', 'der_x', 'der_v', 'time']
+        for s in signals:
+            for a, b in zip(m1.signals[s], m2.md.signals[s]):
+                self.assertAlmostEqual(a, b)
+
 
     def test_msd_timedep(self):
         m = MSDTimeDep()
-        ts, sol = m.simulate(10, 0.01)
-        plt.plot(ts, sol[0])
-        plt.show()
-        self.assertGreaterEqual(sol[0][-1], 3)
+        ForwardEuler().simulate(m, 10, 0.01)
+        # plt.plot(m.u.signals['time'], m.u.signals['F'])
+        # plt.show()
+        self.assertGreaterEqual(m.u.signals['F'][-1], 3)
+        self.assertGreaterEqual(m.msd.signals['x'][-1], 3)
 
     def test_pop(self):
         a = [1, 2, 3, 4]
@@ -89,17 +86,39 @@ class TestModel(unittest.TestCase):
     def test_msd_state_signals(self):
         m = MSDAutonomous()
 
-        init = m.state_vector()
-        self.assertEqual(m.nstates(), 2)
-        self.assertEqual(len(init), 2)
-        self.assertAlmostEqual(init[0], 0.0)
-        self.assertAlmostEqual(init[1], 1.0)
+        X = m.state_vector()
+        self.assertEqual(m.nstates(), 2+1)
+        self.assertEqual(len(X), 2+1)
+        self.assertAlmostEqual(X[0], 0.0)
+        self.assertAlmostEqual(X[1], 0.0)
+        self.assertAlmostEqual(X[2], 1.0)
 
         m.x = 1.0
         m.v = 0.0
-        new = m.state_vector()
+        X = m.state_vector()
+        self.assertAlmostEqual(X[1], 1.0)
+        self.assertAlmostEqual(X[2], 0.0)
 
-        self.assertAlmostEqual(new[0], 1.0)
-        self.assertAlmostEqual(new[1], 0.0)
+        m.reset()
+        m.assert_initialized()
+        X = m.state_vector()
+        self.assertAlmostEqual(X[1], 0.0)
+        self.assertAlmostEqual(X[2], 1.0)
 
+        X[1] = 1.0
+        m._update(X.tolist(), 0.0)
+        self.assertAlmostEqual(X[1], 1.0)
+        self.assertAlmostEqual(X[2], 1.0)
 
+        X = m.state_vector()
+        self.assertAlmostEqual(X[1], 1.0)
+        self.assertAlmostEqual(X[2], 1.0)
+
+        m.reset()
+        m.v = 1.0
+
+        solver = ForwardEuler()
+        solver.simulate(m, 10.0, 0.01)
+
+        # plt.plot(m.signals['time'], m.signals['x'])
+        # plt.show()
