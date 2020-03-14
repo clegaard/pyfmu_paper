@@ -8,8 +8,8 @@ class BikeModelWithDriver(Model):
     def __init__(self):
         super().__init__()
 
-        self.model('driver', DynamicDriver())
-        self.model('bike', BikeModel())
+        self.driver = DynamicDriver()
+        self.bike = BikeModel()
 
         self.connect(self.bike, 'deltaf', self.driver, 'steering')
 

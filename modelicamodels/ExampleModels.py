@@ -4,24 +4,28 @@ from Model import Model
 class MassDamper(Model):
     def __init__(self):
         super().__init__()
-        self.state('x', 0.0)
-        self.state('v', 1.0)
 
-        self.parameter('d', 1.0)
-        self.var('friction', lambda: self.d * self.v())
-        self.input('F')
+        self.x = self.state(0.0)
+        self.v = self.state(1.0)
+        self.d = self.parameter(1.0)
+
+        self.friction = self.var(lambda: self.d * self.v())
+
+        self.F = self.input()
+
         self.der('x', lambda: self.v())
         self.der('v', lambda: self.F() - self.friction())
 
         self.save()
 
+
 class Spring(Model):
     def __init__(self):
         super().__init__()
 
-        self.input('x')
-        self.parameter('k', 1.0)
-        self.var('F', lambda: - self.k * self.x())
+        self.x = self.input()
+        self.k = self.parameter(1.0)
+        self.F = self.var(lambda: - self.k * self.x())
         self.save()
 
 
@@ -29,25 +33,26 @@ class MassSpringDamper(Model):
     def __init__(self):
         super().__init__()
 
-        self.model('md', MassDamper())
-        self.model('s', Spring())
+        self.md = MassDamper()
+        self.s = Spring()
 
         self.connect(self.s, 'x', self.md, 'x')
         self.connect(self.md, 'F', self.s, 'F')
         self.save()
 
+
 class MassSpringDamperFlat(Model):
     def __init__(self):
         super().__init__()
-        self.state('x', 0.0)
-        self.state('v', 1.0)
+        self.x = self.state(0.0)
+        self.v = self.state(1.0)
 
-        self.input('F')
+        self.F = self.input()
 
-        self.parameter('k', 1.0)
-        self.parameter('d', 1.0)
-        self.var('spring', lambda: self.k * self.x())
-        self.var('damper', lambda: self.d * self.v())
+        self.k = self.parameter(1.0)
+        self.d = self.parameter(1.0)
+        self.spring = self.var(lambda: self.k * self.x())
+        self.damper = self.var(lambda: self.d * self.v())
         self.der('x', lambda: self.v())
         self.der('v', lambda: self.F() - self.damper() - self.spring())
         self.save()
@@ -56,13 +61,11 @@ class MassSpringDamperFlat(Model):
 class MSDAutonomous(Model):
     def __init__(self):
         super().__init__()
-        self.state('x', 0.0)
-        self.state('v', 1.0)
+        self.x = self.state(0.0)
+        self.v = self.state(1.0)
 
-        self.parameter('k', 1.0)
-        self.parameter('d', 1.0)
-        # self.var('spring', lambda: self.k * self.x())
-        # self.var('damper', lambda: self.d * self.v())
+        self.k = self.parameter(1.0)
+        self.d = self.parameter(1.0)
         self.der('x', lambda: self.v())
         self.der('v', lambda: - self.d * self.v() - self.k * self.x())
 
@@ -72,23 +75,23 @@ class MSDAutonomous(Model):
 class TimeDepInput(Model):
     def __init__(self):
         super().__init__()
-        self.var('F', lambda: 0.0 if self.time() < 4.0 else 4.0)
+        self.F = self.var(lambda: 0.0 if self.time() < 4.0 else 4.0)
         self.save()
 
 
 class DelayExample(Model):
     def __init__(self):
         super().__init__()
-        self.input('u')
-        self.var('d', lambda: self.u(-1.0))
+        self.u = self.input()
+        self.d = self.var(lambda: self.u(-1.0))
         self.save()
 
 
 class DelayExampleScenario(Model):
     def __init__(self):
         super().__init__()
-        self.model('u', TimeDepInput())
-        self.model('d', DelayExample())
+        self.u = TimeDepInput()
+        self.d = DelayExample()
 
         self.connect(self.d, 'u', self.u, 'F')
 
@@ -99,8 +102,8 @@ class MSDTimeDep(Model):
     def __init__(self):
         super().__init__()
 
-        self.model('msd', MassSpringDamperFlat())
-        self.model('u', TimeDepInput())
+        self.msd = MassSpringDamperFlat()
+        self.u = TimeDepInput()
 
         self.connect(self.msd, 'F', self.u, 'F')
 
@@ -111,6 +114,6 @@ class TwoMSDComparison(Model):
     def __init__(self):
         super().__init__()
 
-        self.model('m1', MassSpringDamperFlat())
-        self.model('m2', MassSpringDamper())
+        self.m1 = MassSpringDamperFlat()
+        self.m2 = MassSpringDamper()
         self.save()

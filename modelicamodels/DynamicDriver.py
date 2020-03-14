@@ -5,11 +5,11 @@ class DynamicDriver(Model):
 
     def __init__(self):
         super().__init__()
-        self.parameter('width', 0.335)
-        self.parameter('amplitude', 0.8)
-        self.parameter('risingtime', 5.0)
-        self.parameter('starttime', 5.0)
-        self.var('steering', self.get_steering)
+        self.width = self.parameter(0.335)
+        self.amplitude = self.parameter(0.8)
+        self.risingtime = self.parameter(5.0)
+        self.starttime = self.parameter(5.0)
+        self.steering = self.var(self.get_steering)
         self.save()
 
     def get_steering(self):

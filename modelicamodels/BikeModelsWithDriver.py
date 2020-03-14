@@ -10,10 +10,10 @@ class BikeModelsWithDriver(Model):
     def __init__(self):
         super().__init__()
 
-        self.model('ddriver', DynamicDriver())
-        self.model('dbike', BikeDynamicModel())
-        self.model('kdriver', KinematicsDriver())
-        self.model('kbike', BikeModel())
+        self.ddriver = DynamicDriver()
+        self.dbike = BikeDynamicModel()
+        self.kdriver = KinematicsDriver()
+        self.kbike = BikeModel()
 
         self.connect(self.dbike, 'deltaf', self.ddriver, 'steering')
         self.connect(self.kdriver, 'u', self.ddriver, 'steering')

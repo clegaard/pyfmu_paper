@@ -1,9 +1,5 @@
-import math
-from collections import namedtuple
 from functools import reduce
-from typing import Any, Iterator
 
-from scipy.integrate import odeint, solve_ivp
 import numpy as np
 
 
@@ -12,7 +8,7 @@ class Model:
 
     def __init__(self):
         super().__init__()
-        self._under_construction = True
+        self._bypass_set_attr = True
         self._states = []
         self._inputs = []
         self._parameters = []
@@ -22,14 +18,20 @@ class Model:
         self._current_state_values = {}
         self._state_derivatives = {}
         self.signals = {}
-        self.state(self.TIME, 0.0)
+        self._under_construction = True
+        self._bypass_set_attr = False
+
+        self.time = self.state(0.0)
         self.der(self.TIME, lambda: 1.0)
 
     def _new_signal(self, name):
         assert name not in self.signals.keys()
         self.signals[name] = []
 
-    def state(self, name, init):
+    def state(self, init):
+        return lambda name: self._new_state(name, init)
+
+    def _new_state(self, name, init):
         assert self._under_construction
         assert name.isidentifier()
         assert not callable(init)
@@ -41,7 +43,13 @@ class Model:
 
         self._new_signal(name)
 
-        setattr(self, name, self._get_state_function(name))
+        return self._get_state_function(name)
+
+    def _set_input(self, name, value):
+        assert name in self._inputs
+        self._bypass_set_attr = True
+        setattr(self, name, value)
+        self._bypass_set_attr = False
 
     def der(self, state, fun):
         assert self._under_construction
@@ -51,29 +59,38 @@ class Model:
         self._new_signal(der_name)
         self._state_derivatives[state] = self._get_signal_function(der_name, fun)
 
-    def input(self, name):
+    def _new_input(self, name):
         assert self._under_construction
         assert name.isidentifier()
         assert not hasattr(self, name)
         self._inputs.append(name)
         self._new_signal(name)
-        setattr(self, name, self._get_signal_function(name, lambda: 0.0))
+        return self._get_signal_function(name, lambda: 0.0)
 
-    def var(self, name, fun):
+    def input(self):
+        return lambda name: self._new_input(name)
+
+    def _new_var(self, name, fun):
         assert self._under_construction
         assert callable(fun)
         assert name.isidentifier()
         assert not hasattr(self, name)
         self._vars.append(name)
         self._new_signal(name)
-        setattr(self, name, self._get_signal_function(name, fun))
+        return self._get_signal_function(name, fun)
 
-    def parameter(self, name, val):
+    def var(self, fun):
+        return lambda name: self._new_var(name, fun)
+
+    def _new_parameter(self, name, val):
         assert name.isidentifier()
         assert not callable(val)
         assert not hasattr(self, name)
         self._parameters.append(name)
-        setattr(self, name, val)
+        return val
+
+    def parameter(self, val):
+        return lambda name: self._new_parameter(name, val)
 
     def model(self, name, obj):
         assert self._under_construction
@@ -81,7 +98,7 @@ class Model:
         assert name.isidentifier()
         assert not hasattr(self, name)
         self._models.append(name)
-        setattr(self, name, obj)
+        return obj
 
     def connect(self, in_m, in_p, out_m, out_p):
         assert self._under_construction
@@ -96,11 +113,13 @@ class Model:
             else:
                 return trg
 
-        setattr(in_m, in_p, resolve)
+        in_m._set_input(in_p, resolve)
 
     def save(self):
         assert self._under_construction
+        self._bypass_set_attr = True
         self._under_construction = False
+        self._bypass_set_attr = False
 
     """
     Sets every state to its initial value (provided at the constructor) and clears every signal to its initial value (or empty).
@@ -342,8 +361,20 @@ class Model:
         return total_flat
 
     def __setattr__(self, key, value):
-        if key == '_under_construction' or self._under_construction:
+        if key == '_bypass_set_attr' or self._bypass_set_attr:
             super().__setattr__(key, value)
+        elif self._under_construction:
+            """
+            When under construction, a trick is done to record the variables being declared.
+            """
+            # value as a lambda that we can use to recover the parameters of the variable being declared.
+            assert callable(value) or isinstance(value, Model)
+            if callable(value):
+                # We recover the LHS of the assignment using the key
+                super().__setattr__(key, value(key))
+            else:
+                # Submodel being instantiated
+                super().__setattr__(key, self.model(key, value))
         else:
             """
             Overrides the assignment operation to something sensible.
