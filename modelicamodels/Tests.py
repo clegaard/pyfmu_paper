@@ -60,11 +60,11 @@ class TestExperiments(unittest.TestCase):
         p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
         plt.show()
 
-    def test_twobikes(self):
+    def plot_twobikes(self, delay, k):
         m = BikeModelsWithDriver()
-        m.kdriver.delay = 0.3
-        m.kdriver.k = 0.7045283
-        SciPySolver(StepRK45).simulate(m, 20, 0.1)
+        m.kdriver.delay = delay
+        m.kdriver.k = k
+        SciPySolver(StepRK45).simulate(m, 33, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
@@ -73,13 +73,43 @@ class TestExperiments(unittest.TestCase):
         p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
         plt.show()
 
+    def plot_cost_two_bikes_range(self, delays, ks):
+        for d in delays:
+            ks_costs = []
+            for k in ks:
+                print(d, k)
+                ks_costs.append(self.cost_two_bikes([d, k]))
+            plt.plot(ks, ks_costs, label=str(d))
+        plt.legend()
+        plt.show()
+
+    def test_plot_cost_two_bikes_range(self):
+        self.plot_cost_two_bikes_range([0.1, 0.2, 0.3, 0.4], [0.7, 0.8, 0.9, 1.0])
+
+    def test_twobikes(self):
+        self.plot_twobikes(0.3, 0.7045283)
+
+    def cost_two_bikes(self, p):
+        delay, k = p
+        m = BikeModelsWithDriver()
+        m.kdriver.delay = delay
+        m.kdriver.k = k
+        SciPySolver(StepRK45).simulate(m, 33, 0.1)
+        dX = np.array(m.dbike.signals['X'])
+        dY = np.array(m.dbike.signals['Y'])
+        kX = np.array(m.kbike.signals['x'])
+        kY = np.array(m.kbike.signals['y'])
+        errx = (dX - kX) ** 2
+        erry = (dY - kY) ** 2
+        return errx.sum() + erry.sum()
+
     def test_calibrate_kinematics_driver(self):
         def cost(p):
             delay, k = p
             m = BikeModelsWithDriver()
             m.kdriver.delay = delay
             m.kdriver.k = k
-            SciPySolver(StepRK45).simulate(m, 10, 0.1)
+            SciPySolver(StepRK45).simulate(m, 33, 0.1)
             dX = np.array(m.dbike.signals['X'])
             dY = np.array(m.dbike.signals['Y'])
             kX = np.array(m.kbike.signals['x'])
@@ -89,6 +119,10 @@ class TestExperiments(unittest.TestCase):
             ssd = np.concatenate((errx, erry))
             return ssd
 
-        sol = least_squares(cost, [0.3, 0.9], bounds=([0.0, 0.0], [1.0, 1.0]))
+        sol = least_squares(cost, [0.2, 0.7045283], bounds=([0.0, 0.0], [1.0, 1.0]), verbose=2)
         print(sol)
+        assert sol.success
+
+        delay, k = sol.x
+        self.plot_twobikes(delay, k)
         # Best solution: array([0.3      , 0.7045283])

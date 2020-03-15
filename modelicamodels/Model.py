@@ -369,13 +369,14 @@ class Model:
             When under construction, a trick is done to record the variables being declared.
             """
             # value as a lambda that we can use to recover the parameters of the variable being declared.
-            assert callable(value) or isinstance(value, Model)
             if callable(value):
                 # We recover the LHS of the assignment using the key
                 super().__setattr__(key, value(key))
-            else:
+            elif isinstance(value, Model):
                 # Submodel being instantiated
                 super().__setattr__(key, self.model(key, value))
+            else:
+                super().__setattr__(key, value)
         else:
             """
             Overrides the assignment operation to something sensible.
@@ -383,11 +384,10 @@ class Model:
                 and not the state function.
             - When an input is assigned, this is the input function that is assigned, so this does not need special treatment.
             """
-            assert hasattr(self, key)
+            assert hasattr(self, key), "Not allowed to set new states on an object. Set them in the constructor."
             if key in self._current_state_values.keys():
                 self._current_state_values[key] = value
             else:
-                assert key in self._inputs or key in self._parameters
                 super().__setattr__(key, value)
 
     @staticmethod
