@@ -48,7 +48,7 @@ class TestExperiments(unittest.TestCase):
         # plt.show()
 
         m.reset()
-        SciPySolver(StepRK45).simulate(m, 200.0, 0.1)
+        SciPySolver(StepRK45).simulate(m, 10.0, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
@@ -60,11 +60,11 @@ class TestExperiments(unittest.TestCase):
 
     def test_twobikes(self):
         m = BikeModelsWithDriver()
-        SciPySolver(StepRK45).simulate(m, 200, 0.1)
+        SciPySolver(StepRK45).simulate(m, 10, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
         p1.plot(m.signals['time'], m.kdriver.signals['steering'])
-        p2.plot(m.dbike.signals['X'], m.dbike.signals['X'])
+        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
         p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
         plt.show()

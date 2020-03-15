@@ -252,6 +252,7 @@ class Model:
 
     def _get_state_function(self, name):
         assert self._under_construction
+        assert name in self._current_state_values.keys()
 
         def signal(d=None):
             if d is None:
@@ -265,7 +266,7 @@ class Model:
         assert self._under_construction
 
         def signal(d=None):
-            if d is None:
+            if d is None or len(self.signals[name]) == 0:
                 value = fun()
             else:
                 value = self._delayed_signal_value(name, d)
@@ -391,6 +392,7 @@ class Model:
 
     @staticmethod
     def _find_sup(t, ts):
+        assert(len(ts) > 0)
         idx = len(ts) - 1  # Start at the end
         while ts[idx] > t and idx > 0:
             idx -= 1
