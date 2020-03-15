@@ -14,7 +14,7 @@ model BikeDynamicModel
   parameter Real Y0=0 "initial position in y";
   parameter Real psi0=0 "initial yaw";
   parameter Real dpsi0=0 "initial yaw rate";
-  parameter Real vx0=0 "initial velocity along x";
+  parameter Real vx0=1.0 "initial velocity along x";
   parameter Real vy0=0 "initial velocity along x";
   output Real af "Front Tire slip angle";
   output Real ar "Rear Tire slip angle";

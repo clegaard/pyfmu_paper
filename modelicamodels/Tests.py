@@ -68,3 +68,16 @@ class TestExperiments(unittest.TestCase):
         p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
         p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
         plt.show()
+
+    def calibrate_kinematics_driver(self):
+        def cost(delay, k):
+            m = BikeModelsWithDriver()
+            SciPySolver(StepRK45).simulate(m, 10, 0.1)
+            
+
+        _, (p1, p2) = plt.subplots(1, 2)
+        p1.plot(m.signals['time'], m.ddriver.signals['steering'])
+        p1.plot(m.signals['time'], m.kdriver.signals['steering'])
+        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
+        p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
+        plt.show()

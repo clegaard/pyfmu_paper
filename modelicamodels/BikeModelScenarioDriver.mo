@@ -8,8 +8,8 @@ equation
   kbike.a = 0;
   dbike.a = 0;
   kbike.deltaf = kDriver.y;
-  dbike.deltaf = dDriver.steering.y;
-  kDriver.u = dDriver.steering.y;
+  dbike.deltaf = dDriver.steering;
+  kDriver.u = dDriver.steering;
   annotation(
     experiment(StartTime = 0, StopTime = 200, Tolerance = 1e-06, Interval = 0.002));
 end BikeModelScenarioDriver;
