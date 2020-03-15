@@ -62,7 +62,9 @@ class TestExperiments(unittest.TestCase):
 
     def test_twobikes(self):
         m = BikeModelsWithDriver()
-        SciPySolver(StepRK45).simulate(m, 10, 0.1)
+        m.kdriver.delay = 0.3
+        m.kdriver.k = 0.7045283
+        SciPySolver(StepRK45).simulate(m, 20, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
@@ -89,3 +91,4 @@ class TestExperiments(unittest.TestCase):
 
         sol = least_squares(cost, [0.3, 0.9], bounds=([0.0, 0.0], [1.0, 1.0]))
         print(sol)
+        # Best solution: array([0.3      , 0.7045283])
