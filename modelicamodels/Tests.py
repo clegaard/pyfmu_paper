@@ -1,5 +1,7 @@
 import unittest
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import least_squares
 
 from BikeModel import BikeModel
 from BikeModelWithDriver import BikeModelWithDriver
@@ -69,15 +71,21 @@ class TestExperiments(unittest.TestCase):
         p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
         plt.show()
 
-    def calibrate_kinematics_driver(self):
-        def cost(delay, k):
+    def test_calibrate_kinematics_driver(self):
+        def cost(p):
+            delay, k = p
             m = BikeModelsWithDriver()
+            m.kdriver.delay = delay
+            m.kdriver.k = k
             SciPySolver(StepRK45).simulate(m, 10, 0.1)
-            
+            dX = np.array(m.dbike.signals['X'])
+            dY = np.array(m.dbike.signals['Y'])
+            kX = np.array(m.kbike.signals['x'])
+            kY = np.array(m.kbike.signals['y'])
+            errx = (dX - kX)
+            erry = (dY - kY)
+            ssd = np.concatenate((errx, erry))
+            return ssd
 
-        _, (p1, p2) = plt.subplots(1, 2)
-        p1.plot(m.signals['time'], m.ddriver.signals['steering'])
-        p1.plot(m.signals['time'], m.kdriver.signals['steering'])
-        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
-        p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
-        plt.show()
+        sol = least_squares(cost, [0.3, 0.9], bounds=([0.0, 0.0], [1.0, 1.0]))
+        print(sol)
