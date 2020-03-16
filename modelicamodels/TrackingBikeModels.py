@@ -52,6 +52,7 @@ class TrackingSimulator(Model):
         self.tolerance = self.parameter(10)
         self.horizon = self.parameter(1.0)
         self.nsamples = self.parameter(10)
+        self.time_step = self.parameter(0.1)
         self.error = self.var(self.get_error)
 
         self.to_track = SystemToTrack()
@@ -95,20 +96,7 @@ class TrackingSimulator(Model):
         """
         error_space, tracked_x, tracked_y = self.get_solution_over_horizon()
         t_startcal = error_space[0]
-        t_endcal = error_space[-1]
-        t_recal = (t_endcal - t_startcal)
-
-        def map_t(t_cal):
-            """
-            Returns the time in the outer simulation that currents to the given time in the inner calibration.
-            Is used to recover the control input from the out simulation over the horizon.
-            :param t_cal:
-            :return:
-            """
-            assert 0.0 <= t_cal <= t_recal
-            sim_t = t_startcal + t_cal
-            assert t_startcal <= sim_t <= t_endcal
-            return sim_t
+        t = error_space[-1]
 
         def cost(p):
             delay, k = p
@@ -116,17 +104,19 @@ class TrackingSimulator(Model):
 
             m.kdriver.delay = delay
             m.kdriver.k = k
-            m.control_steering = lambda d: self.to_track.steering(-(t_endcal - map_t(m.time())))
-            assert np.isclose(self.to_track.dbike.X(-(t_endcal - t_startcal)), tracked_x[0])
-            assert np.isclose(self.to_track.dbike.Y(-(t_endcal - t_startcal)), tracked_y[0])
-            m.kbike.x = self.to_track.dbike.X(-(t_endcal - t_startcal))
-            m.kbike.y = self.to_track.dbike.Y(-(t_endcal - t_startcal))
-            m.kbike.v = self.to_track.dbike.vx(-(t_endcal - t_startcal))
-            m.kbike.psi = self.to_track.dbike.psi(-(t_endcal - t_startcal))
+            m.control_steering = lambda d: self.to_track.steering(-(t - m.time()))
+            assert np.isclose(self.to_track.dbike.X(-(t - t_startcal)), tracked_x[0])
+            assert np.isclose(self.to_track.dbike.Y(-(t - t_startcal)), tracked_y[0])
+            m.kbike.x = self.to_track.dbike.X(-(t - t_startcal))
+            m.kbike.y = self.to_track.dbike.Y(-(t - t_startcal))
+            m.kbike.v = self.to_track.dbike.vx(-(t - t_startcal))
+            m.kbike.psi = self.to_track.dbike.psi(-(t - t_startcal))
 
-            SciPySolver(StepRK45).simulate(m, t_recal, 0.1)
-            actual_x = m.signals['x']
-            actual_y = m.signals['y']
+            sol = SciPySolver(StepRK45).simulate(m, t_startcal, t, self.time_step, error_space)
+            actual_x = sol.y[3]
+            actual_y = sol.y[4]
+            assert (np.isclose(actual_x[0], tracked_x[0]))
+            assert (np.isclose(actual_y[0], tracked_y[0]))
             error = self.compute_error(tracked_x, tracked_y, actual_x, actual_y)
             return error
 

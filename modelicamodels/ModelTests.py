@@ -24,7 +24,7 @@ class TestModel(unittest.TestCase):
         init = m.state_vector()
         self.assertEqual(len(init), 3+1+1)
 
-        SciPySolver(StepRK45).simulate(m, 10, 0.01)
+        SciPySolver(StepRK45).simulate(m, 0.0, 10, 0.01)
 
         self.assertEqual(len(m.signals), 2) # time and der_time
         self.assertEqual(len(m.md.signals), 8)
@@ -38,7 +38,7 @@ class TestModel(unittest.TestCase):
 
     def test_autonomous_model(self):
         m = MassSpringDamperFlat()
-        SciPySolver(StepRK45).simulate(m, 10.0, 0.01)
+        SciPySolver(StepRK45).simulate(m, 0.0, 10.0, 0.01)
         # plt.plot(m.signals['time'], m.signals['x'])
         # plt.show()
 
@@ -61,7 +61,7 @@ class TestModel(unittest.TestCase):
     def test_similar_states(self):
         m = TwoMSDComparison()
 
-        SciPySolver(StepRK45).simulate(m, 10.0, 0.01)
+        SciPySolver(StepRK45).simulate(m, 0.0, 10.0, 0.01)
 
         signals = ['x','v', 'der_x', 'der_v']
         for s in signals:
@@ -71,7 +71,7 @@ class TestModel(unittest.TestCase):
 
     def test_msd_timedep(self):
         m = MSDTimeDep()
-        SciPySolver(StepRK45).simulate(m, 10, 0.01)
+        SciPySolver(StepRK45).simulate(m, 0.0, 10, 0.01)
         # plt.plot(m.u.signals['time'], m.u.signals['F'])
         # plt.show()
         self.assertGreaterEqual(m.u.signals['F'][-1], 3)
@@ -119,14 +119,14 @@ class TestModel(unittest.TestCase):
         m.v = 1.0
 
         solver = SciPySolver(StepRK45)
-        solver.simulate(m, 10.0, 0.01)
+        solver.simulate(m, 0.0, 10.0, 0.01)
 
         # plt.plot(m.signals['time'], m.signals['x'])
         # plt.show()
 
     def test_delay(self):
         m = DelayExampleScenario()
-        SciPySolver(StepRK45).simulate(m, 4.3, 0.01)
+        SciPySolver(StepRK45).simulate(m, 0.0, 4.3, 0.01)
         # plt.plot(m.signals['time'], m.u.signals['F'])
         # plt.plot(m.signals['time'], m.d.signals['d'])
         # plt.show()
@@ -141,4 +141,4 @@ class TestModel(unittest.TestCase):
         self.assertEqual(3, Model._find_sup(3.8, sample))
 
     def test_profile(self):
-        cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 15.0, 0.01)', globals(), locals())
+        cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 0.0, 15.0, 0.01)', globals(), locals())

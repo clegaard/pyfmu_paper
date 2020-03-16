@@ -108,6 +108,16 @@ class Model:
         self._num_states = self.nstates()
         self._bypass_set_attr = False
 
+    def set_time(self, t):
+        """
+        Sets the internal time, and all submodels's time, to t.
+        :param t:
+        :return:
+        """
+        self.time = t
+        for m in self._models:
+            getattr(self, m).set_time(t)
+
     """
     Sets every state to its initial value (provided at the constructor) and clears every signal to its initial value (or empty).
     If you want different initial values, then set them after calling this function.

@@ -1,7 +1,6 @@
 from scipy.integrate import solve_ivp, RK45
 
 from Model import Model
-import numpy as np
 
 
 class SciPySolver:
@@ -9,12 +8,13 @@ class SciPySolver:
         self._solverclass = solverclass
         super().__init__()
 
-    def simulate(self, model: Model, stop_t, h):
-        assert np.isclose(model.time(), 0.0)
+    def simulate(self, model: Model, start_t, stop_t, h, t_eval=None):
+        model.set_time(start_t)
         model.assert_initialized()
         f = model.derivatives()
         x = model.state_vector()
-        # Record time 0
-        model.step_commit(x, 0.0)
-        sol = solve_ivp(f, (0.0, stop_t), x, method=self._solverclass, max_step=h, model=model)
+        # Record first time.
+        model.step_commit(x, start_t)
+        sol = solve_ivp(f, (start_t, stop_t), x, method=self._solverclass, max_step=h, model=model, t_eval=t_eval)
         assert sol.success
+        return sol
