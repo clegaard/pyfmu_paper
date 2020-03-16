@@ -2,6 +2,8 @@ from scipy.integrate import RK45
 
 import numpy as np
 
+from Model import Model
+
 
 class StepRK45(RK45):
 
@@ -9,7 +11,7 @@ class StepRK45(RK45):
                  rtol=1e-3, atol=1e-6, vectorized=False,
                  first_step=None, **extraneous):
         assert max_step<np.inf
-        self._model = extraneous.pop('model')
+        self._model: Model = extraneous.pop('model')
         self._last_committed_t = t0
         super().__init__(fun, t0, y0, t_bound, max_step=max_step,
                  rtol=rtol, atol=atol, vectorized=vectorized,
@@ -20,5 +22,7 @@ class StepRK45(RK45):
         assert msg is None
         step_taken = self.t - self._last_committed_t
         if step_taken >= self.max_step:  # Improves performance by not recording every sample.
-            self._model.step_commit(self.y, self.t)
+            update_state = self._model.step(self.y, self.t)
+            if update_state:
+                self.y = self._model.state_vector()
             self._last_committed_t = self.t

@@ -166,10 +166,10 @@ class Model:
         return self._fmap_signals(lambda s: prefix + s,
                                   lambda m: getattr(self, m).signal_names(prefix + m + '.'))
 
-    """
-    Creates a flat state from the internal state and models
-    """
     def state_vector(self):
+        """
+        Creates a flat state from the internal state and models
+        """
         assert not self._under_construction
         return self._fmap_states(lambda s: getattr(self, s)(),
                                  lambda m: getattr(self, m).state_vector())
@@ -207,28 +207,36 @@ class Model:
 
         assert len(state) == 0
 
-    """
-    Stores a new snapshot in the state history.
-    """
-    def step_commit(self, state, t):
+    def step(self, state, t, override=False):
+        """
+        Stores a new snapshot in the state history.
+        :returns True if the model has a new continuous state (e.g., due to handling events).
+        """
         self._update(state.tolist(), t)
         internal_time = self.time()
         assert np.isclose(internal_time, t)
-        self._step_commit()
+        self._step_commit(override)
+        return override
 
     # noinspection PyProtectedMember
-    def _step_commit(self):
+    def _step_commit(self, override):
         current_length = self.get_history_size()
 
         def _commit_signal(name, value):
-            self.signals[name].append(value)
+            if override:
+                self.signals[name][-1] = value
+            else:
+                self.signals[name].append(value)
 
         self.__proc_signals(lambda s: _commit_signal(s, self._current_state_values[s]),
                             lambda d: _commit_signal(self._der(d), self._state_derivatives[d]()),
                             lambda u: _commit_signal(u, getattr(self, u)()),
                             lambda v: _commit_signal(v, getattr(self, v)()),
-                            lambda m: getattr(self, m)._step_commit())
-        assert self.get_history_size() == current_length + 1
+                            lambda m: getattr(self, m)._step_commit(override))
+        if override:
+            assert self.get_history_size() == current_length
+        else:
+            assert self.get_history_size() == current_length + 1
 
     def get_history_size(self):
         size = len(self.signals[self.TIME])

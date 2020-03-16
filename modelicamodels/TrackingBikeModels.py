@@ -54,6 +54,7 @@ class TrackingSimulator(Model):
         self.nsamples = self.parameter(10)
         self.time_step = self.parameter(0.1)
         self.error = self.var(self.get_error)
+        self.last_calibration_time = self.time()
 
         self.to_track = SystemToTrack()
         self.tracking = TrackingModel()
@@ -61,6 +62,10 @@ class TrackingSimulator(Model):
         self.tracking.control_steering = self.to_track.steering
 
         self.save()
+
+    def set_time(self, t):
+        super().set_time(t)
+        self.last_calibration_time = self.time()
 
     def get_solution_over_horizon(self):
         t = self.time()
@@ -98,8 +103,7 @@ class TrackingSimulator(Model):
         t_startcal = error_space[0]
         t = error_space[-1]
 
-        def cost(p):
-            delay, k = p
+        def get_new_tracking_trajectories(delay, k):
             m = TrackingModel()
 
             m.kdriver.delay = delay
@@ -113,8 +117,17 @@ class TrackingSimulator(Model):
             m.kbike.psi = self.to_track.dbike.psi(-(t - t_startcal))
 
             sol = SciPySolver(StepRK45).simulate(m, t_startcal, t, self.time_step, error_space)
-            actual_x = sol.y[3]
-            actual_y = sol.y[4]
+            return sol.y
+
+        def cost(p):
+            delay, k = p
+
+            new_state_trajectories = get_new_tracking_trajectories(delay, k)
+
+            # TODO: we should not have to use numbers to refer to states. We should use stuff like 'x' and 'y'. If
+            #  anything changes in the model, the code below breaks.
+            actual_x = new_state_trajectories[3]
+            actual_y = new_state_trajectories[4]
             assert (np.isclose(actual_x[0], tracked_x[0]))
             assert (np.isclose(actual_y[0], tracked_y[0]))
             error = self.compute_error(tracked_x, tracked_y, actual_x, actual_y)
@@ -123,19 +136,32 @@ class TrackingSimulator(Model):
         new_sol = minimize(cost, [self.tracking.kdriver.delay, self.tracking.kdriver.k], method='Nelder-Mead',
                  options={'xatol': 0.01, 'fatol': 1.0})
 
-        # TODO
-        print(new_sol)
+        assert new_sol.success, new_sol.message
 
+        newdelay, newk = new_sol.x
+        new_state_trajectories = get_new_tracking_trajectories(newdelay, newk)
+        new_present_state = new_state_trajectories[:, -1]
+        self.tracking.step(new_present_state, self.time(), override=True)
+        assert np.isclose(new_present_state[3], self.tracking.x())
+        assert np.isclose(new_present_state[4], self.tracking.y())
 
+        self.last_calibration_time = self.time()
+        return True
 
-    def step_commit(self, state, t):
+    def should_recalibrate(self):
+        return (self.time() - self.last_calibration_time > self.horizon) and self.error() > self.tolerance
+
+    def step(self, state, t, override=False):
         """
         Overrides the Model.step_commit in order to implement discrete time functionality.
         The general algorithm is:
         1. Check if the error has exceeded the recalibration threshold.
         2. If so, start recalibration.
         """
-        super().step_commit(state, t)
+        assert not override
+        state_updated = super().step(state, t, override)
+        assert not state_updated
 
-        if self.error() > self.tolerance:
-            self.recalibrate()
+        if self.should_recalibrate():
+            return self.recalibrate()
+        return False
