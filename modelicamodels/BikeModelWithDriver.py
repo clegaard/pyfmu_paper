@@ -11,7 +11,7 @@ class BikeModelWithDriver(Model):
         self.driver = DynamicDriver()
         self.bike = BikeModel()
 
-        self.connect(self.bike, 'deltaf', self.driver, 'steering')
+        self.bike.deltaf = self.driver.steering
 
         self.save()
 

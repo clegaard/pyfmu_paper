@@ -15,9 +15,9 @@ class BikeModelsWithDriver(Model):
         self.kdriver = KinematicsDriver()
         self.kbike = BikeModel()
 
-        self.connect(self.dbike, 'deltaf', self.ddriver, 'steering')
-        self.connect(self.kdriver, 'u', self.ddriver, 'steering')
-        self.connect(self.kbike, 'deltaf', self.kdriver, 'steering')
+        self.dbike.deltaf = self.ddriver.steering
+        self.kdriver.u = self.ddriver.steering
+        self.kbike.deltaf = self.kdriver.steering
 
         self.save()
 

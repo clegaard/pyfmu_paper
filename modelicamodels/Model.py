@@ -100,21 +100,6 @@ class Model:
         self._models.append(name)
         return obj
 
-    def connect(self, in_m, in_p, out_m, out_p):
-        assert self._under_construction
-        assert in_p in in_m._inputs
-        assert out_p in out_m._vars or out_p in out_m._states
-
-        def resolve(d=None):
-            trg = getattr(out_m, out_p)
-            # works for states, parameters, and also other inputs
-            if callable(trg):
-                return trg(d)
-            else:
-                return trg
-
-        in_m._set_input(in_p, resolve)
-
     def save(self):
         assert self._under_construction
         self._bypass_set_attr = True
@@ -387,6 +372,15 @@ class Model:
             assert hasattr(self, key), "Not allowed to set new states on an object. Set them in the constructor."
             if key in self._current_state_values.keys():
                 self._current_state_values[key] = value
+            elif key in self._inputs:
+                def resolve(d=None):
+                    # works for states, parameters, and also other inputs
+                    if callable(value):
+                        return value(d)
+                    else:
+                        return value
+
+                super().__setattr__(key, resolve)
             else:
                 super().__setattr__(key, value)
 

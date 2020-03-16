@@ -36,8 +36,9 @@ class MassSpringDamper(Model):
         self.md = MassDamper()
         self.s = Spring()
 
-        self.connect(self.s, 'x', self.md, 'x')
-        self.connect(self.md, 'F', self.s, 'F')
+        self.s.x = self.md.x
+        self.md.F = self.s.F
+
         self.save()
 
 
@@ -93,7 +94,7 @@ class DelayExampleScenario(Model):
         self.u = TimeDepInput()
         self.d = DelayExample()
 
-        self.connect(self.d, 'u', self.u, 'F')
+        self.d.u = self.u.F
 
         self.save()
 
@@ -105,7 +106,7 @@ class MSDTimeDep(Model):
         self.msd = MassSpringDamperFlat()
         self.u = TimeDepInput()
 
-        self.connect(self.msd, 'F', self.u, 'F')
+        self.msd.F = self.u.F
 
         self.save()
 

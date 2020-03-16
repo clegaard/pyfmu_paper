@@ -1,7 +1,7 @@
 import unittest
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import least_squares
+from scipy.optimize import least_squares, minimize_scalar
 
 from BikeModel import BikeModel
 from BikeModelWithDriver import BikeModelWithDriver
@@ -87,9 +87,16 @@ class TestExperiments(unittest.TestCase):
         self.plot_cost_two_bikes_range([0.1, 0.2, 0.3, 0.4], [0.7, 0.8, 0.9, 1.0])
 
     def test_twobikes(self):
-        self.plot_twobikes(0.3, 0.7045283)
+        self.plot_twobikes(0.7, 0.7045283)
 
     def cost_two_bikes(self, p):
+        print("Running sim with delay={} and k={}...".format(p[0], p[1]))
+        residuals = self.cost_two_bikes_lse(p)
+        cost = (residuals**2).sum()
+        print("Running sim with delay={} and k={}... Done. Cost={}.".format(p[0], p[1], cost))
+        return cost
+
+    def cost_two_bikes_lse(self, p):
         delay, k = p
         m = BikeModelsWithDriver()
         m.kdriver.delay = delay
@@ -99,30 +106,18 @@ class TestExperiments(unittest.TestCase):
         dY = np.array(m.dbike.signals['Y'])
         kX = np.array(m.kbike.signals['x'])
         kY = np.array(m.kbike.signals['y'])
-        errx = (dX - kX) ** 2
-        erry = (dY - kY) ** 2
-        return errx.sum() + erry.sum()
+        errx = (dX - kX)
+        erry = (dY - kY)
+        ssd = np.concatenate((errx, erry))
+        return ssd
 
     def test_calibrate_kinematics_driver(self):
-        def cost(p):
-            delay, k = p
-            m = BikeModelsWithDriver()
-            m.kdriver.delay = delay
-            m.kdriver.k = k
-            SciPySolver(StepRK45).simulate(m, 33, 0.1)
-            dX = np.array(m.dbike.signals['X'])
-            dY = np.array(m.dbike.signals['Y'])
-            kX = np.array(m.kbike.signals['x'])
-            kY = np.array(m.kbike.signals['y'])
-            errx = (dX - kX)
-            erry = (dY - kY)
-            ssd = np.concatenate((errx, erry))
-            return ssd
+        delays = [0.6, 0.7]
 
-        sol = least_squares(cost, [0.2, 0.7045283], bounds=([0.0, 0.0], [1.0, 1.0]), verbose=2)
-        print(sol)
-        assert sol.success
+        for d in delays:
+            sol = minimize_scalar(lambda k: self.cost_two_bikes([d, k]), [0.5, 1.0], bounds=(0.0, 2.0), tol=0.1)
+            print("d=", d)
+            print("opt=", sol.x)
+            print("cost=", sol.cost)
+            print(sol)
 
-        delay, k = sol.x
-        self.plot_twobikes(delay, k)
-        # Best solution: array([0.3      , 0.7045283])
