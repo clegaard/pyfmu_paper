@@ -1,3 +1,4 @@
+import cProfile
 import unittest
 
 import matplotlib.pyplot as plt
@@ -138,3 +139,6 @@ class TestModel(unittest.TestCase):
         self.assertEqual(0, Model._find_sup(-1, sample))
         self.assertEqual(6, Model._find_sup(6.2, sample))
         self.assertEqual(3, Model._find_sup(3.8, sample))
+
+    def test_profile(self):
+        cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 15.0, 0.01)', globals(), locals())

@@ -14,5 +14,7 @@ class SciPySolver:
         model.assert_initialized()
         f = model.derivatives()
         x = model.state_vector()
+        # Record time 0
+        model.step_commit(x, 0.0)
         sol = solve_ivp(f, (0.0, stop_t), x, method=self._solverclass, max_step=h, model=model)
         assert sol.success

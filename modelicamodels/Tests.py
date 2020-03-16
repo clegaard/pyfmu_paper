@@ -45,19 +45,11 @@ class TestExperiments(unittest.TestCase):
     def test_dynamic_bike_model_with_driver(self):
         m = DynamicBikeModelWithDriver()
 
-        # ts = arange(0, 10.0, 0.01)
-        # sol = odeint(m.derivatives(), m.state_vector(), ts, hmax=0.01, tfirst=True)
-        # plt.plot(ts, sol[:, 5])
-        # plt.show()
-
         m.reset()
         SciPySolver(StepRK45).simulate(m, 10.0, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
-        # p1.plot(m.signals['time'], m.dbike.signals['deltaf'])
-        # p1.plot(m.signals['time'], m.dbike.signals['af'])
-        # p1.plot(m.signals['time'], m.dbike.signals['y'])
         p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
         plt.show()
 
@@ -153,6 +145,6 @@ class TestExperiments(unittest.TestCase):
         p2.legend()
         p3.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['vy'], label='dvy')
         p3.legend()
-        p4.plot(m.tracking.kbike.signals['time'], m.tracking.signals['error'], label='error')
+        p4.plot(m.signals['time'], m.signals['error'], label='error')
         p4.legend()
         plt.show()

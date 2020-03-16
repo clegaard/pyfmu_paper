@@ -10,6 +10,7 @@ class Model:
         super().__init__()
         self._bypass_set_attr = True
         self._states = []
+        self._num_states = 0
         self._inputs = []
         self._parameters = []
         self._vars = []
@@ -104,6 +105,7 @@ class Model:
         assert self._under_construction
         self._bypass_set_attr = True
         self._under_construction = False
+        self._num_states = self.nstates()
         self._bypass_set_attr = False
 
     """
@@ -174,13 +176,14 @@ class Model:
 
         return model
 
-    """
-    Takes a flat state, and propagates it to the internal models.
-    Destroys the given state!
-    """
+    # noinspection PyProtectedMember
     def _update(self, state, t):
+        """
+        Takes a flat state, and propagates it to the internal models.
+        Destroys the given state!
+        """
         assert not self._under_construction
-        assert len(state) == self.nstates()
+        assert len(state) == self._num_states
 
         popped, state = self._pop(state, len(self._states))
 
@@ -189,7 +192,7 @@ class Model:
 
         for m in self._models:
             model = getattr(self, m)
-            popped, state = self._pop(state, model.nstates())
+            popped, state = self._pop(state, model._num_states)
             model._update(popped, t)
 
         assert len(state) == 0
@@ -307,7 +310,7 @@ class Model:
         models_data = [f_models(m) for m in self._models]
         total = [np.array(internal_data)] + models_data
         total_flat = reduce(lambda a, b: np.concatenate((a, b)), total)
-        assert len(total_flat) == self.nstates()
+        assert len(total_flat) == self._num_states
         return total_flat
 
     def __proc_signals(self, pstate, pder, pin, pvar, pmodel):
