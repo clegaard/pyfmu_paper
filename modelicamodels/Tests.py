@@ -130,11 +130,15 @@ class TestExperiments(unittest.TestCase):
 
     def test_tracking_model(self):
         m = TrackingSimulator()
+        m.tolerance = 10
+        m.horizon = 5.0
+        m.nsamples = 20
+        m.time_step = 0.1
         m.tracking.kdriver.delay = 0.6541019662496845
         m.tracking.kdriver.k = 0.8819660112501051
-        m.to_track.ddriver.nperiods = 1
+        m.to_track.ddriver.nperiods = 2
 
-        SciPySolver(StepRK45).simulate(m, 0.0, 40, 0.1)
+        SciPySolver(StepRK45).simulate(m, 0.0, 30, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
@@ -142,6 +146,8 @@ class TestExperiments(unittest.TestCase):
         p1.legend()
         p2.plot(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'], label='dX vs dY')
         p2.plot(m.tracking.kbike.signals['x'], m.tracking.kbike.signals['y'], label='kx vs ky')
+        for calib in m.recalibration_history:
+            p2.plot(calib.xs[3, :], calib.xs[4, :], '--', label='recalibration')
         p2.legend()
         p3.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['Y'], label='dy')
         p3.plot(m.tracking.kbike.signals['time'], m.tracking.kbike.signals['y'], label='ky')

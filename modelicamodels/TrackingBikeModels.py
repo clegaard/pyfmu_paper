@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import numpy as np
 from scipy.optimize import minimize
 
@@ -43,7 +45,7 @@ class TrackingModel(Model):
 
         self.save()
 
-
+CalibrationInfo = namedtuple('CalibrationInfo', 'delay k ts xs')
 
 class TrackingSimulator(Model):
     def __init__(self):
@@ -55,6 +57,8 @@ class TrackingSimulator(Model):
         self.time_step = self.parameter(0.1)
         self.error = self.var(self.get_error)
         self.last_calibration_time = self.time()
+
+        self.recalibration_history = []
 
         self.to_track = SystemToTrack()
         self.tracking = TrackingModel()
@@ -140,6 +144,7 @@ class TrackingSimulator(Model):
 
         newdelay, newk = new_sol.x
         new_state_trajectories = get_new_tracking_trajectories(newdelay, newk)
+        self.recalibration_history.append(CalibrationInfo(newdelay, newk, error_space, new_state_trajectories))
         new_present_state = new_state_trajectories[:, -1]
         self.tracking.step(new_present_state, self.time(), override=True)
         assert np.isclose(new_present_state[3], self.tracking.x())
