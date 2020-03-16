@@ -240,7 +240,7 @@ class Model:
         assert name in self._current_state_values.keys()
 
         def signal(d=None):
-            if d is None:
+            if d is None or len(self.signals[name]) == 0 or np.isclose(d, 0.0):
                 return self._current_state_values[name]
             else:
                 return self._delayed_signal_value(name, d)
@@ -251,7 +251,7 @@ class Model:
         assert self._under_construction
 
         def signal(d=None):
-            if d is None or len(self.signals[name]) == 0:
+            if d is None or len(self.signals[name]) == 0 or np.isclose(d, 0.0):
                 value = fun()
             else:
                 value = self._delayed_signal_value(name, d)
@@ -265,6 +265,7 @@ class Model:
         t = self.time()
         ts = max(0, t+d)  # if -d goes beyond, we set ts=0
         idx = self._earliest_time(ts)
+        assert idx <= len(self.signals[name])-1
         value = self.signals[name][idx]
         return value
 

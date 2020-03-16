@@ -10,6 +10,7 @@ from DynamicBikeModelWithDriver import DynamicBikeModelWithDriver
 from DynamicDriver import DynamicDriver
 from SciPySolver import SciPySolver
 from StepRK45 import StepRK45
+from TrackingBikeModels import TrackingSimulator
 
 
 class TestExperiments(unittest.TestCase):
@@ -60,17 +61,26 @@ class TestExperiments(unittest.TestCase):
         p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
         plt.show()
 
-    def plot_twobikes(self, delay, k):
+    def plot_twobikes(self, delay, k, nperiods, stoptime):
         m = BikeModelsWithDriver()
+        m.ddriver.starttime = 10.0
+        m.ddriver.nperiods = nperiods
         m.kdriver.delay = delay
         m.kdriver.k = k
-        SciPySolver(StepRK45).simulate(m, 33, 0.1)
-        _, (p1, p2) = plt.subplots(1, 2)
+        SciPySolver(StepRK45).simulate(m, stoptime, 0.1)
+        _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
-        p1.plot(m.signals['time'], m.ddriver.signals['steering'])
-        p1.plot(m.signals['time'], m.kdriver.signals['steering'])
-        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
-        p2.plot(m.kbike.signals['x'], m.kbike.signals['y'])
+        p1.plot(m.signals['time'], m.ddriver.signals['steering'], label='steering')
+        p1.plot(m.signals['time'], m.kdriver.signals['steering'], label='steering')
+        p1.legend()
+        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'], label='dX vs dY')
+        p2.plot(m.kbike.signals['x'], m.kbike.signals['y'], label='kx vs ky')
+        p2.legend()
+        p3.plot(m.dbike.signals['time'], m.dbike.signals['vy'], label='dvy')
+        p3.legend()
+        p4.plot(m.dbike.signals['time'], m.dbike.signals['dpsi'], label='dpsi')
+        p4.plot(m.kbike.signals['time'], m.kbike.signals['der_psi'], label='der_psi')
+        p4.legend()
         plt.show()
 
     def plot_cost_two_bikes_range(self, delays, ks):
@@ -87,7 +97,8 @@ class TestExperiments(unittest.TestCase):
         self.plot_cost_two_bikes_range([0.1, 0.2, 0.3, 0.4], [0.7, 0.8, 0.9, 1.0])
 
     def test_twobikes(self):
-        self.plot_twobikes(0.6541019662496845, 0.8819660112501051)
+        self.plot_twobikes(0.0, 0.8819660112501051, 1, 25)
+        # self.plot_twobikes(0.6541019662496845, 0.8819660112501051, 2, 50)
 
     def cost_two_bikes(self, p):
         # print("Running sim with delay={} and k={}...".format(p[0], p[1]))
@@ -125,3 +136,23 @@ class TestExperiments(unittest.TestCase):
                         options={'xatol': 0.1})
         print(sol)
 
+    def test_tracking_model(self):
+        m = TrackingSimulator()
+        m.tracking.kdriver.delay = 0.6541019662496845
+        m.tracking.kdriver.k = 0.8819660112501051
+        m.to_track.ddriver.nperiods = 1
+
+        SciPySolver(StepRK45).simulate(m, 40, 0.1)
+        _, (p1, p2, p3, p4) = plt.subplots(1, 4)
+
+        p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
+        p1.plot(m.signals['time'], m.tracking.kdriver.signals['steering'], label='steering')
+        p1.legend()
+        p2.plot(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'], label='dX vs dY')
+        p2.plot(m.tracking.kbike.signals['x'], m.tracking.kbike.signals['y'], label='kx vs ky')
+        p2.legend()
+        p3.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['vy'], label='dvy')
+        p3.legend()
+        p4.plot(m.tracking.kbike.signals['time'], m.tracking.signals['error'], label='error')
+        p4.legend()
+        plt.show()
