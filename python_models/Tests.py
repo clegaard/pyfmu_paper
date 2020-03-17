@@ -9,7 +9,7 @@ from BikeModelsWithDriver import BikeModelsWithDriver
 from BikeDynamicModelWithDriver import BikeDynamicModelWithDriver
 from DriverDynamic import DriverDynamic
 from ModelSolver import ModelSolver
-from BikeTrackingModels import TrackingSimulator, BikeTrackingSimulator
+from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulator
 
 
 class TestExperiments(unittest.TestCase):
