@@ -1,7 +1,7 @@
 import unittest
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import least_squares, minimize_scalar
+from scipy.optimize import minimize_scalar
 
 from BikeKinematicModel import BikeKinematicModel
 from BikeKinematicModelWithDriver import BikeKinematicModelWithDriver
