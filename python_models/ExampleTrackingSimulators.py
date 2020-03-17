@@ -27,11 +27,11 @@ class MSDFlatInDamper(Model):
         self.save()
 
     def random_d(self):
-        return random()
+        return random()*self.time()
 
     def discrete_step(self):
         super().discrete_step()
-        self._rand_d = self.random_d()*self.time()
+        self._rand_d = self.random_d()
         return True
 
 

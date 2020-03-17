@@ -6,7 +6,7 @@ from ExampleTrackingSimulators import MSDTrackingSimulator
 from ModelSolver import ModelSolver
 
 
-class TrackingSimulator(unittest.TestCase):
+class TrackingSimulatorTests(unittest.TestCase):
 
     def test_msd_tracking(self):
         seed(1)
@@ -15,10 +15,10 @@ class TrackingSimulator(unittest.TestCase):
         m.horizon = 5.0
         m.nsamples = 20
         m.time_step = 0.1
-        m.conv_xatol = 1.0
-        m.conv_fatol = 1.0
+        m.conv_xatol = 0.1
+        m.conv_fatol = 0.1
 
-        ModelSolver().simulate(m, 0.0, 50, 1.1)
+        ModelSolver().simulate(m, 0.0, 50, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.to_track.signals['F'], label='F')
