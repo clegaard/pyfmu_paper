@@ -182,6 +182,6 @@ class TestExperiments(unittest.TestCase):
         p3.plot(m.signals['time'], m.signals['error'], label='error')
         p3.legend()
         p4.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['Caf'], label='real_Caf')
-        p4.plot(m.tracking.signals['time'], m.tracking.signals['Caf'], label='real_Caf')
+        p4.plot(m.tracking.signals['time'], m.tracking.signals['Caf'], label='approx_Caf')
         p4.legend()
         plt.show()

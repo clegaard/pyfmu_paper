@@ -80,7 +80,13 @@ class TrackingSimulator(Model):
         assert False, "For subclasses"
         return np.zeros(2)
 
-    def update_tracking_model(self, new_present_state, tracked_solution):
+    def update_tracking_model(self, new_present_state, new_parameter):
+        """
+        Updates the model with the new state and best parameters found.
+        :param new_present_state:
+        :param new_parameter:
+        :return:
+        """
         assert False, "For subclasses"
 
     def recalibrate(self):
@@ -108,7 +114,7 @@ class TrackingSimulator(Model):
         new_state_trajectories = self.run_whatif_simulation(new_sol.x, t0, tf, tracked_solutions, error_space, False)
         self.recalibration_history.append(CalibrationInfo(new_sol.x, error_space, new_state_trajectories))
         new_present_state = new_state_trajectories[:, -1]
-        self.update_tracking_model(new_present_state)
+        self.update_tracking_model(new_present_state, new_sol.x)
 
         self.last_calibration_time = self.time()
         return True
