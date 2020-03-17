@@ -1,18 +1,25 @@
+from collections import namedtuple
+
 import numpy as np
+from scipy.optimize import minimize
 
 from Model import Model
-from TrackingBikeModels import SystemToTrack, TrackingModel
+
+CalibrationInfo = namedtuple('CalibrationInfo', 'p ts xs')
 
 
 class TrackingSimulator(Model):
     def __init__(self):
         super().__init__()
         self.tolerance = self.parameter(10)
+        self.conv_xatol = self.parameter(0.01)
+        self.conv_fatol = self.parameter(1.0)
         self.horizon = self.parameter(1.0)
         self.nsamples = self.parameter(10)
         self.time_step = self.parameter(0.1)
         self.error = self.var(self.get_error)
         self.last_calibration_time = self.time()
+        self.recalibration_history = []
         self._matched_signals = []
 
     def match_signals(self, solution, approximation):
@@ -25,26 +32,56 @@ class TrackingSimulator(Model):
         :return:
         """
         t = self.time()
-        error_space, tracked_x, tracked_y  = self.get_solution_over_horizon()
-        actual_x = np.array([self.tracking.x(-(t-ti)) for ti in error_space])
-        actual_y = np.array([self.tracking.y(-(t-ti)) for ti in error_space])
-        error = self.compute_error(tracked_x, tracked_y, actual_x, actual_y)
+        error_space, tracked_solutions, actual_signals  = self.get_solution_over_horizon()
+        error = self.compute_error(tracked_solutions, actual_signals)
         return error
 
-    def compute_error(self, tracked_x, tracked_y, actual_x, actual_y):
-        return ((tracked_x-actual_x)**2).sum() + ((tracked_y-actual_y)**2).sum()
+    def compute_error(self, tracked_solutions, new_state_trajectories):
+        assert len(tracked_solutions) == len(new_state_trajectories)
+        sum = 0
+        for (sol, actual) in zip(tracked_solutions, new_state_trajectories):
+            sum += ((sol-actual)**2).sum()
+        return sum
 
     def get_solution_over_horizon(self):
         t = self.time()
         max_horizon = min(t, self.horizon)  # We can't go beyong time 0
         error_space = np.linspace(t - max_horizon, t, self.nsamples)
-        tracked_x_traj = np.array([self.to_track.x(-(t-ti)) for ti in error_space])
-        tracked_y_traj = np.array([self.to_track.y(-(t-ti)) for ti in error_space])
-        return error_space, tracked_x_traj, tracked_y_traj
+        tracked_solutions = []
+        actual_signals = []
+        for (sol_signal, actual) in self._matched_signals:
+            tracked_solutions.append(np.array([sol_signal(-(t - ti)) for ti in error_space]))
+            actual_signals.append(np.array([actual(-(t - ti)) for ti in error_space]))
+        assert len(tracked_solutions) == len(self._matched_signals) == len(actual_signals)
+        return error_space, tracked_solutions, actual_signals
 
     def set_time(self, t):
         super().set_time(t)
         self.last_calibration_time = self.time()
+
+    # noinspection PyUnreachableCode
+    def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
+        """
+        Runs a new simulation of the tracking model starting from t0 till tf.
+        Note that subclasses should not forget to set the appropriate inputs to the tracking model.
+        :param only_tracked_state:
+        :param new_parameters:
+        :param t0:
+        :param tf:
+        :param tracked_solutions:
+        :return: Returns the trajectories that are matched to the tracked model if only_tracked_state.
+        Otherwise, returns the full state.
+        """
+        assert False, "For subclasses"
+        return []
+
+    # noinspection PyUnreachableCode
+    def get_parameter_guess(self):
+        assert False, "For subclasses"
+        return np.zeros(2)
+
+    def update_tracking_model(self, new_present_state, tracked_solution):
+        assert False, "For subclasses"
 
     def recalibrate(self):
         """
@@ -54,52 +91,24 @@ class TrackingSimulator(Model):
         - Changes the TrackingModel with the new parameters, so that the simulation may continue.
         :return:
         """
-        error_space, tracked_x, tracked_y = self.get_solution_over_horizon()
-        t_startcal = error_space[0]
-        t = error_space[-1]
-
-        def get_new_tracking_trajectories(delay, k):
-            m = TrackingModel()
-
-            m.kdriver.delay = delay
-            m.kdriver.k = k
-            m.control_steering = lambda d: self.to_track.steering(-(t - m.time()))
-            assert np.isclose(self.to_track.dbike.X(-(t - t_startcal)), tracked_x[0])
-            assert np.isclose(self.to_track.dbike.Y(-(t - t_startcal)), tracked_y[0])
-            m.kbike.x = self.to_track.dbike.X(-(t - t_startcal))
-            m.kbike.y = self.to_track.dbike.Y(-(t - t_startcal))
-            m.kbike.v = self.to_track.dbike.vx(-(t - t_startcal))
-            m.kbike.psi = self.to_track.dbike.psi(-(t - t_startcal))
-
-            sol = SciPySolver(StepRK45).simulate(m, t_startcal, t, self.time_step, error_space)
-            return sol.y
+        error_space, tracked_solutions, _ = self.get_solution_over_horizon()
+        t0 = error_space[0]
+        tf = error_space[-1]
 
         def cost(p):
-            delay, k = p
-
-            new_state_trajectories = get_new_tracking_trajectories(delay, k)
-
-            # TODO: we should not have to use numbers to refer to states. We should use stuff like 'x' and 'y'. If
-            #  anything changes in the model, the code below breaks.
-            actual_x = new_state_trajectories[3]
-            actual_y = new_state_trajectories[4]
-            assert (np.isclose(actual_x[0], tracked_x[0]))
-            assert (np.isclose(actual_y[0], tracked_y[0]))
-            error = self.compute_error(tracked_x, tracked_y, actual_x, actual_y)
+            new_trajs = self.run_whatif_simulation(p, t0, tf, tracked_solutions, error_space)
+            error = self.compute_error(tracked_solutions, new_trajs)
             return error
 
-        new_sol = minimize(cost, [self.tracking.kdriver.delay, self.tracking.kdriver.k], method='Nelder-Mead',
-                 options={'xatol': 0.01, 'fatol': 1.0})
+        new_sol = minimize(cost, self.get_parameter_guess(), method='Nelder-Mead',
+                 options={'xatol': self.conv_xatol, 'fatol': self.conv_fatol})
 
         assert new_sol.success, new_sol.message
 
-        newdelay, newk = new_sol.x
-        new_state_trajectories = get_new_tracking_trajectories(newdelay, newk)
-        self.recalibration_history.append(CalibrationInfo(newdelay, newk, error_space, new_state_trajectories))
+        new_state_trajectories = self.run_whatif_simulation(new_sol.x, t0, tf, tracked_solutions, error_space, False)
+        self.recalibration_history.append(CalibrationInfo(new_sol.x, error_space, new_state_trajectories))
         new_present_state = new_state_trajectories[:, -1]
-        self.tracking.step(new_present_state, self.time(), override=True)
-        assert np.isclose(new_present_state[3], self.tracking.x())
-        assert np.isclose(new_present_state[4], self.tracking.y())
+        self.update_tracking_model(new_present_state)
 
         self.last_calibration_time = self.time()
         return True
@@ -123,16 +132,3 @@ class TrackingSimulator(Model):
         return False
 
 
-class ExampleTrackingSimulator(TrackingSimulator):
-    def __init__(self):
-        super().__init__()
-
-        self.to_track = SystemToTrack()
-        self.tracking = TrackingModel()
-
-        self.tracking.control_steering = self.to_track.steering
-
-        self.match_signals(self.to_track.x, self.tracking.x)
-        self.match_signals(self.to_track.y, self.tracking.y)
-
-        self.save()

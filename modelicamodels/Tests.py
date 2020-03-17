@@ -10,7 +10,7 @@ from DynamicBikeModelWithDriver import DynamicBikeModelWithDriver
 from DynamicDriver import DynamicDriver
 from SciPySolver import SciPySolver
 from StepRK45 import StepRK45
-from TrackingBikeModels import TrackingSimulator
+from TrackingBikeModels import TrackingSimulator, BikeTrackingSimulator
 
 
 class TestExperiments(unittest.TestCase):
@@ -129,7 +129,7 @@ class TestExperiments(unittest.TestCase):
         print(sol)
 
     def test_tracking_model(self):
-        m = TrackingSimulator()
+        m = BikeTrackingSimulator()
         m.tolerance = 10
         m.horizon = 5.0
         m.nsamples = 20
