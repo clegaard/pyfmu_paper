@@ -1,7 +1,7 @@
 from BikeDynamicModel import BikeDynamicModel
-from BikeModel import BikeModel
-from DynamicDriver import DynamicDriver
-from KinematicsDriver import KinematicsDriver
+from BikeKinematicModel import BikeKinematicModel
+from DriverDynamic import DriverDynamic
+from DriverKinematic import DriverKinematic
 from Model import Model
 
 
@@ -10,10 +10,10 @@ class BikeModelsWithDriver(Model):
     def __init__(self):
         super().__init__()
 
-        self.ddriver = DynamicDriver()
+        self.ddriver = DriverDynamic()
         self.dbike = BikeDynamicModel()
-        self.kdriver = KinematicsDriver()
-        self.kbike = BikeModel()
+        self.kdriver = DriverKinematic()
+        self.kbike = BikeKinematicModel()
 
         self.dbike.deltaf = self.ddriver.steering
         self.kdriver.u = self.ddriver.steering

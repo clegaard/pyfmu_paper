@@ -3,38 +3,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import least_squares, minimize_scalar
 
-from BikeModel import BikeModel
-from BikeModelWithDriver import BikeModelWithDriver
+from BikeKinematicModel import BikeKinematicModel
+from BikeKinematicModelWithDriver import BikeKinematicModelWithDriver
 from BikeModelsWithDriver import BikeModelsWithDriver
-from DynamicBikeModelWithDriver import DynamicBikeModelWithDriver
-from DynamicDriver import DynamicDriver
-from SciPySolver import SciPySolver
-from StepRK45 import StepRK45
-from TrackingBikeModels import TrackingSimulator, BikeTrackingSimulator
+from BikeDynamicModelWithDriver import BikeDynamicModelWithDriver
+from DriverDynamic import DriverDynamic
+from ModelSolver import ModelSolver
+from BikeTrackingModels import TrackingSimulator, BikeTrackingSimulator
 
 
 class TestExperiments(unittest.TestCase):
     def test_driver(self):
-        m = DynamicDriver()
+        m = DriverDynamic()
 
-        SciPySolver(StepRK45).simulate(m, 0.0, 10, 0.1)
+        ModelSolver().simulate(m, 0.0, 10, 0.1)
 
         plt.plot(m.signals['time'], m.signals['steering'])
         plt.show()
 
     def test_bike_model_fixed_steering(self):
-        m = BikeModel()
+        m = BikeKinematicModel()
         m.deltaf = lambda: 0.4 if m.time() > 5.0 else 0.0
-        SciPySolver(StepRK45).simulate(m, 0.0, 10, 0.1)
+        ModelSolver().simulate(m, 0.0, 10, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
         p1.plot(m.signals['time'], m.signals['psi'])
         p2.plot(m.signals['x'], m.signals['y'])
         plt.show()
 
     def test_bike_model_with_driver(self):
-        m = BikeModelWithDriver()
+        m = BikeKinematicModelWithDriver()
 
-        SciPySolver(StepRK45).simulate(m, 0.0, 200, 0.1)
+        ModelSolver().simulate(m, 0.0, 200, 0.1)
 
         _, (p1, p2) = plt.subplots(1, 2)
 
@@ -43,10 +42,10 @@ class TestExperiments(unittest.TestCase):
         plt.show()
 
     def test_dynamic_bike_model_with_driver(self):
-        m = DynamicBikeModelWithDriver()
+        m = BikeDynamicModelWithDriver()
 
         m.reset()
-        SciPySolver(StepRK45).simulate(m, 0.0, 10.0, 0.1)
+        ModelSolver().simulate(m, 0.0, 10.0, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
@@ -59,7 +58,7 @@ class TestExperiments(unittest.TestCase):
         m.ddriver.nperiods = nperiods
         m.kdriver.delay = delay
         m.kdriver.k = k
-        SciPySolver(StepRK45).simulate(m, 0.0, stoptime, 0.1)
+        ModelSolver().simulate(m, 0.0, stoptime, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'], label='steering')
@@ -104,7 +103,7 @@ class TestExperiments(unittest.TestCase):
         m = BikeModelsWithDriver()
         m.kdriver.delay = delay
         m.kdriver.k = k
-        SciPySolver(StepRK45).simulate(m, 0.0, 33, 0.1)
+        ModelSolver().simulate(m, 0.0, 33, 0.1)
         dX = np.array(m.dbike.signals['X'])
         dY = np.array(m.dbike.signals['Y'])
         kX = np.array(m.kbike.signals['x'])
@@ -138,7 +137,7 @@ class TestExperiments(unittest.TestCase):
         m.tracking.kdriver.k = 0.8819660112501051
         m.to_track.ddriver.nperiods = 2
 
-        SciPySolver(StepRK45).simulate(m, 0.0, 30, 0.1)
+        ModelSolver().simulate(m, 0.0, 30, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')

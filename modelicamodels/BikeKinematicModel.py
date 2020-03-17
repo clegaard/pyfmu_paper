@@ -3,7 +3,7 @@ import math
 from Model import Model
 
 
-class BikeModel(Model):
+class BikeKinematicModel(Model):
 
     def __init__(self):
         super().__init__()

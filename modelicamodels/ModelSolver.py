@@ -1,8 +1,23 @@
-from scipy.integrate import RK45
-
 import numpy as np
+from scipy.integrate import solve_ivp, RK45
 
 from Model import Model
+
+
+class ModelSolver:
+    def __init__(self):
+        super().__init__()
+
+    def simulate(self, model: Model, start_t, stop_t, h, t_eval=None):
+        model.set_time(start_t)
+        model.assert_initialized()
+        f = model.derivatives()
+        x = model.state_vector()
+        # Record first time.
+        model.step(x, start_t)
+        sol = solve_ivp(f, (start_t, stop_t), x, method=StepRK45, max_step=h, model=model, t_eval=t_eval)
+        assert sol.success
+        return sol
 
 
 class StepRK45(RK45):

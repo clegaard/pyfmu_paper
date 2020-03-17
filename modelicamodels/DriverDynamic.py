@@ -1,7 +1,7 @@
 from Model import Model
 
 
-class DynamicDriver(Model):
+class DriverDynamic(Model):
 
     def __init__(self):
         super().__init__()

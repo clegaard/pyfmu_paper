@@ -1,15 +1,12 @@
-from collections import namedtuple
 
 import numpy as np
-from scipy.optimize import minimize
 
 from BikeDynamicModel import BikeDynamicModel
-from BikeModel import BikeModel
-from DynamicDriver import DynamicDriver
-from KinematicsDriver import KinematicsDriver
+from BikeKinematicModel import BikeKinematicModel
+from DriverDynamic import DriverDynamic
+from DriverKinematic import DriverKinematic
 from Model import Model
-from SciPySolver import SciPySolver
-from StepRK45 import StepRK45
+from ModelSolver import ModelSolver
 from TrackingSimulator import TrackingSimulator
 
 
@@ -17,7 +14,7 @@ class SystemToTrack(Model):
 
     def __init__(self):
         super().__init__()
-        self.ddriver = DynamicDriver()
+        self.ddriver = DriverDynamic()
         self.dbike = BikeDynamicModel()
 
         self.dbike.deltaf = self.ddriver.steering
@@ -34,8 +31,8 @@ class TrackingModel(Model):
         super().__init__()
 
         # Submodels
-        self.kdriver = KinematicsDriver()
-        self.kbike = BikeModel()
+        self.kdriver = DriverKinematic()
+        self.kbike = BikeKinematicModel()
 
         self.control_steering = self.input()
         self.x = self.var(self.kbike.x)
@@ -75,7 +72,7 @@ class BikeTrackingSimulator(TrackingSimulator):
         m.kbike.v = self.to_track.dbike.vx(-(tf - t0))
         m.kbike.psi = self.to_track.dbike.psi(-(tf - t0))
 
-        sol = SciPySolver(StepRK45).simulate(m, t0, tf, self.time_step, error_space)
+        sol = ModelSolver().simulate(m, t0, tf, self.time_step, error_space)
         new_trajectories = sol.y
         if only_tracked_state:
             new_trajectories = np.array([

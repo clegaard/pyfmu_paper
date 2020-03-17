@@ -7,11 +7,10 @@ import matplotlib.pyplot as plt
 from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous, \
     DelayExampleScenario, TwoMSDComparison
 from Model import Model
-from SciPySolver import SciPySolver
-from StepRK45 import StepRK45
+from ModelSolver import ModelSolver
 
 
-class TestModel(unittest.TestCase):
+class ModelTests(unittest.TestCase):
     def test_some_model(self):
         m = MassDamper()
 
@@ -25,7 +24,7 @@ class TestModel(unittest.TestCase):
         init = m.state_vector()
         self.assertEqual(len(init), 3+1+1)
 
-        SciPySolver(StepRK45).simulate(m, 0.0, 10, 0.01)
+        ModelSolver().simulate(m, 0.0, 10, 0.01)
 
         self.assertEqual(len(m.signals), 2) # time and der_time
         self.assertEqual(len(m.md.signals), 8)
@@ -39,7 +38,7 @@ class TestModel(unittest.TestCase):
 
     def test_autonomous_model(self):
         m = MassSpringDamperFlat()
-        SciPySolver(StepRK45).simulate(m, 0.0, 10.0, 0.01)
+        ModelSolver().simulate(m, 0.0, 10.0, 0.01)
         # plt.plot(m.signals['time'], m.signals['x'])
         # plt.show()
 
@@ -62,7 +61,7 @@ class TestModel(unittest.TestCase):
     def test_similar_states(self):
         m = TwoMSDComparison()
 
-        SciPySolver(StepRK45).simulate(m, 0.0, 10.0, 0.01)
+        ModelSolver().simulate(m, 0.0, 10.0, 0.01)
 
         signals = ['x','v', 'der_x', 'der_v']
         for s in signals:
@@ -72,7 +71,7 @@ class TestModel(unittest.TestCase):
 
     def test_msd_timedep(self):
         m = MSDTimeDep()
-        SciPySolver(StepRK45).simulate(m, 0.0, 10, 0.01)
+        ModelSolver().simulate(m, 0.0, 10, 0.01)
         # plt.plot(m.u.signals['time'], m.u.signals['F'])
         # plt.show()
         self.assertGreaterEqual(m.u.signals['F'][-1], 3)
@@ -119,7 +118,7 @@ class TestModel(unittest.TestCase):
         m.reset()
         m.v = 1.0
 
-        solver = SciPySolver(StepRK45)
+        solver = ModelSolver()
         solver.simulate(m, 0.0, 10.0, 0.01)
 
         # plt.plot(m.signals['time'], m.signals['x'])
@@ -127,7 +126,7 @@ class TestModel(unittest.TestCase):
 
     def test_delay(self):
         m = DelayExampleScenario()
-        SciPySolver(StepRK45).simulate(m, 0.0, 4.3, 0.01)
+        ModelSolver().simulate(m, 0.0, 4.3, 0.01)
         # plt.plot(m.signals['time'], m.u.signals['F'])
         # plt.plot(m.signals['time'], m.d.signals['d'])
         # plt.show()
@@ -143,7 +142,7 @@ class TestModel(unittest.TestCase):
 
     def test_change_model_var_on_the_fly_forbidden(self):
         m1 = MSDTimeDep()
-        SciPySolver(StepRK45).simulate(m1, 0.0, 10, 0.01)
+        ModelSolver().simulate(m1, 0.0, 10, 0.01)
         # plt.plot(m1.u.signals['time'], m1.u.signals['F'])
         # plt.plot(m1.u.signals['time'], m1.msd.signals['x'])
         # plt.show()
@@ -167,7 +166,7 @@ class TestModel(unittest.TestCase):
     def test_change_model_input_on_the_fly_forbidden(self):
         m1 = MassSpringDamperFlat()
         m1.F = lambda d: 0.0 if m1.time() < 4.0 else 4.0
-        SciPySolver(StepRK45).simulate(m1, 0.0, 10, 0.01)
+        ModelSolver().simulate(m1, 0.0, 10, 0.01)
         # plt.plot(m1.signals['time'], m1.signals['F'])
         # plt.plot(m1.signals['time'], m1.signals['x'])
         # plt.show()
@@ -175,10 +174,10 @@ class TestModel(unittest.TestCase):
         m2 = MassSpringDamperFlat()
         m2.F = lambda d: 0.0 if m2.time() < 1.0 else 4.0
 
-        SciPySolver(StepRK45).simulate(m2, 0.0, 10, 0.01)
+        ModelSolver().simulate(m2, 0.0, 10, 0.01)
         # plt.plot(m2.signals['time'], m2.signals['F'])
         # plt.plot(m2.signals['time'], m2.signals['x'])
         # plt.show()
 
     def test_profile(self):
-        cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 0.0, 40.0, 0.01)', globals(), locals(), sort=SortKey.TIME)
+        cProfile.runctx('ModelSolver().simulate(TwoMSDComparison(), 0.0, 40.0, 0.01)', globals(), locals(), sort=SortKey.TIME)
