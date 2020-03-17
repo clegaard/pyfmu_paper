@@ -11,7 +11,7 @@ class MassDamper(Model):
 
         self.friction = self.var(lambda: self.d * self.v())
 
-        self.F = self.input()
+        self.F = self.input(lambda: 0.0)
 
         self.der('x', lambda: self.v())
         self.der('v', lambda: self.F() - self.friction())
@@ -23,7 +23,7 @@ class Spring(Model):
     def __init__(self):
         super().__init__()
 
-        self.x = self.input()
+        self.x = self.input(lambda: 0.0)
         self.k = self.parameter(1.0)
         self.F = self.var(lambda: - self.k * self.x())
         self.save()
@@ -48,7 +48,7 @@ class MassSpringDamperFlat(Model):
         self.x = self.state(0.0)
         self.v = self.state(1.0)
 
-        self.F = self.input()
+        self.F = self.input(lambda: 0.0)
 
         self.k = self.parameter(1.0)
         self.d = self.parameter(1.0)
@@ -83,7 +83,7 @@ class TimeDepInput(Model):
 class DelayExample(Model):
     def __init__(self):
         super().__init__()
-        self.u = self.input()
+        self.u = self.input(lambda: 0.0)
         self.d = self.var(lambda: self.u(-1.0))
         self.save()
 

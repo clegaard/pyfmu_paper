@@ -9,7 +9,7 @@ from BikeModelsWithDriver import BikeModelsWithDriver
 from BikeDynamicModelWithDriver import BikeDynamicModelWithDriver
 from DriverDynamic import DriverDynamic
 from ModelSolver import ModelSolver
-from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulator
+from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulatorKinematic
 
 
 class TestExperiments(unittest.TestCase):
@@ -128,7 +128,7 @@ class TestExperiments(unittest.TestCase):
         print(sol)
 
     def test_tracking_model(self):
-        m = BikeTrackingSimulator()
+        m = BikeTrackingSimulatorKinematic()
         m.tolerance = 10
         m.horizon = 5.0
         m.nsamples = 20

@@ -61,17 +61,18 @@ class Model:
         self._new_signal(der_name)
         self._state_derivatives[state] = self._get_signal_function(der_name, fun)
 
-    def _new_input(self, name):
+    def _new_input(self, name, def_formula):
         assert self._under_construction
         assert name.isidentifier()
         assert not hasattr(self, name)
         self._inputs.append(name)
         self._new_signal(name)
-        return self._get_signal_function(name, lambda: 0.0)
+        return self._get_signal_function(name, def_formula)
 
-    def input(self):
+    def input(self, def_formula):
         assert self._under_construction
-        return lambda name: self._new_input(name)
+        assert callable(def_formula)
+        return lambda name: self._new_input(name, def_formula)
 
     def _new_var(self, name, fun):
         assert self._under_construction

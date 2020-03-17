@@ -20,8 +20,8 @@ class BikeDynamicModel(Model):
         self.vy = self.state(0.0)  # velocity along y";
         self.psi = self.state(0.0)  # Yaw";
         self.dpsi = self.state(0.0)  # Yaw rate";
-        self.a = self.input()  # longitudinal acceleration";
-        self.deltaf = self.input() # steering angle at the front wheel";
+        self.a = self.input(lambda: 0.0)  # longitudinal acceleration";
+        self.deltaf = self.input(lambda: 0.0) # steering angle at the front wheel";
         self.af = self.var(lambda: self.deltaf() - ( self.vy() + self.lf*self.dpsi())/self.vx())  # Front Tire slip angle";
         self.ar = self.var(lambda: (self.vy() - self.lr*self.dpsi())/self.vx())  # Rear Tire slip angle";
         self.Fcf = self.var(lambda: self.Caf*self.af())  # lateral tire force at the front tire in the frame of the front tire";

@@ -34,7 +34,7 @@ class TrackingModel(Model):
         self.kdriver = DriverKinematic()
         self.kbike = BikeKinematicModel()
 
-        self.control_steering = self.input()
+        self.control_steering = self.input(lambda: 0.0)
         self.x = self.var(self.kbike.x)
         self.y = self.var(self.kbike.y)
 
@@ -44,7 +44,7 @@ class TrackingModel(Model):
         self.save()
 
 
-class BikeTrackingSimulator(TrackingSimulator):
+class BikeTrackingSimulatorKinematic(TrackingSimulator):
     def __init__(self):
         super().__init__()
 
