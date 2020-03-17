@@ -322,6 +322,10 @@ class Model:
     def _der(s):
         return 'der_' + s
 
+    def get_state_idx(self, state_name):
+        assert not self._under_construction
+        return self._states.index(state_name)
+
     def _fmap_states(self, f_states, f_models):
         internal_data = [f_states(s) for s in self._states]
         models_data = [f_models(m) for m in self._models]
