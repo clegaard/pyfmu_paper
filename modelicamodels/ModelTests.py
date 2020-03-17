@@ -140,5 +140,44 @@ class TestModel(unittest.TestCase):
         self.assertEqual(6, Model._find_sup(6.2, sample))
         self.assertEqual(3, Model._find_sup(3.8, sample))
 
+    def test_change_model_var_on_the_fly_forbidden(self):
+        m1 = MSDTimeDep()
+        SciPySolver(StepRK45).simulate(m1, 0.0, 10, 0.01)
+        # plt.plot(m1.u.signals['time'], m1.u.signals['F'])
+        # plt.plot(m1.u.signals['time'], m1.msd.signals['x'])
+        # plt.show()
+
+        m2 = MSDTimeDep()
+
+        def forbidden():
+            m2.u.F = lambda: 0.0 if m2.u.time() < 1.0 else 4.0
+
+        # Rewire the model after construction -- This will not affect the values read by the msd, because msd has stored the lambda of u at the time of the connection!
+        self.assertRaises(AssertionError, forbidden)
+
+        # SciPySolver(StepRK45).simulate(m2, 0.0, 10, 0.01)
+        # plt.plot(m2.u.signals['time'], m2.u.signals['F'])
+        # plt.plot(m2.u.signals['time'], m2.msd.signals['x'])
+        # plt.show()
+        # for a, b in zip(m1.msd.signals['x'], m2.msd.signals['x']):
+        # Nothing changed in the input of m2.msd, and this is why we should not rewire stuff on the fly.
+        # self.assertAlmostEqual(a, b, places=1)
+
+    def test_change_model_input_on_the_fly_forbidden(self):
+        m1 = MassSpringDamperFlat()
+        m1.F = lambda d: 0.0 if m1.time() < 4.0 else 4.0
+        SciPySolver(StepRK45).simulate(m1, 0.0, 10, 0.01)
+        # plt.plot(m1.signals['time'], m1.signals['F'])
+        # plt.plot(m1.signals['time'], m1.signals['x'])
+        # plt.show()
+
+        m2 = MassSpringDamperFlat()
+        m2.F = lambda d: 0.0 if m2.time() < 1.0 else 4.0
+
+        SciPySolver(StepRK45).simulate(m2, 0.0, 10, 0.01)
+        # plt.plot(m2.signals['time'], m2.signals['F'])
+        # plt.plot(m2.signals['time'], m2.signals['x'])
+        # plt.show()
+
     def test_profile(self):
         cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 0.0, 15.0, 0.01)', globals(), locals())

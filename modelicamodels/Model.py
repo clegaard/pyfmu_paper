@@ -30,6 +30,7 @@ class Model:
         self.signals[name] = []
 
     def state(self, init):
+        assert self._under_construction
         return lambda name: self._new_state(name, init)
 
     def _new_state(self, name, init):
@@ -69,6 +70,7 @@ class Model:
         return self._get_signal_function(name, lambda: 0.0)
 
     def input(self):
+        assert self._under_construction
         return lambda name: self._new_input(name)
 
     def _new_var(self, name, fun):
@@ -81,6 +83,7 @@ class Model:
         return self._get_signal_function(name, fun)
 
     def var(self, fun):
+        assert self._under_construction
         return lambda name: self._new_var(name, fun)
 
     def _new_parameter(self, name, val):
@@ -91,6 +94,7 @@ class Model:
         return val
 
     def parameter(self, val):
+        assert self._under_construction
         return lambda name: self._new_parameter(name, val)
 
     def model(self, name, obj):
@@ -391,7 +395,7 @@ class Model:
                 and not the state function.
             - When an input is assigned, this is the input function that is assigned, so this does not need special treatment.
             """
-            assert hasattr(self, key), "Not allowed to set new states on an object. Set them in the constructor."
+            assert hasattr(self, key), "Not allowed to set new fields on an object. Set them in the constructor."
             if key in self._current_state_values.keys():
                 self._current_state_values[key] = value
             elif key in self._inputs:
@@ -404,6 +408,8 @@ class Model:
 
                 super().__setattr__(key, resolve)
             else:
+                assert key not in self._vars, "Not allowed to redefine vars. Define them as inputs if you want to " \
+                                              "assign them after the constructor. "
                 super().__setattr__(key, value)
 
     @staticmethod
