@@ -214,7 +214,7 @@ class Model:
 
         return num_read
 
-    def step(self, state, t, override=False):
+    def record_state(self, state, t, override=False):
         """
         Stores a new snapshot in the state history.
         :returns True if the model has a new continuous state (e.g., due to handling events).
@@ -223,7 +223,6 @@ class Model:
         internal_time = self.time()
         assert np.isclose(internal_time, t)
         self._step_commit(override)
-        return override
 
     # noinspection PyProtectedMember
     def _step_commit(self, override):
@@ -420,3 +419,10 @@ class Model:
         assert (idx == len(ts) - 1 or idx == 0 or (ts[idx] <= t and ts[idx + 1] > t))
         assert 0 <= idx <= len(ts)-1
         return idx
+
+    def discrete_step(self):
+        internal_models_changed = False
+        for m in self._models:
+            if getattr(self, m).discrete_step():
+                internal_models_changed = True
+        return internal_models_changed

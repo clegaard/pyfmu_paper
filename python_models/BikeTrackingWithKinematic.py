@@ -85,7 +85,7 @@ class BikeTrackingSimulatorKinematic(TrackingSimulator):
         return new_trajectories
 
     def update_tracking_model(self, new_present_state, new_parameter):
-        self.tracking.step(new_present_state, self.time(), override=True)
+        self.tracking.record_state(new_present_state, self.time(), override=True)
         assert np.isclose(new_present_state[3], self.tracking.x())
         assert np.isclose(new_present_state[4], self.tracking.y())
 

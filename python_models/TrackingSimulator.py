@@ -122,19 +122,16 @@ class TrackingSimulator(Model):
     def should_recalibrate(self):
         return (self.time() - self.last_calibration_time > self.horizon) and self.error() > self.tolerance
 
-    def step(self, state, t, override=False):
+    def discrete_step(self):
         """
-        Overrides the Model.step_commit in order to implement discrete time functionality.
+        Overrides the Model.discrete_step in order to implement discrete time functionality.
         The general algorithm is:
         1. Check if the error has exceeded the recalibration threshold.
         2. If so, start recalibration.
         """
-        assert not override
-        state_updated = super().step(state, t, override)
-        assert not state_updated
-
+        internal_models_changed = super().discrete_step()
         if self.should_recalibrate():
             return self.recalibrate()
-        return False
+        return internal_models_changed
 
 

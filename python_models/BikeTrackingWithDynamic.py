@@ -54,7 +54,7 @@ class BikeTrackingSimulatorDynamic(TrackingSimulator):
         return new_trajectories
 
     def update_tracking_model(self, new_present_state, new_parameter):
-        self.tracking.step(new_present_state, self.time(), override=True)
+        self.tracking.record_state(new_present_state, self.time(), override=True)
         self.tracking.Caf = lambda d: new_parameter[0]
         assert np.isclose(new_present_state[self.X_idx], self.tracking.X())
         assert np.isclose(new_present_state[self.Y_idx], self.tracking.Y())

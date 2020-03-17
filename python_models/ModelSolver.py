@@ -14,7 +14,7 @@ class ModelSolver:
         f = model.derivatives()
         x = model.state_vector()
         # Record first time.
-        model.step(x, start_t)
+        model.record_state(x, start_t)
         sol = solve_ivp(f, (start_t, stop_t), x, method=StepRK45, max_step=h, model=model, t_eval=t_eval)
         assert sol.success
         return sol
@@ -37,7 +37,8 @@ class StepRK45(RK45):
         assert msg is None
         step_taken = self.t - self._last_committed_t
         if step_taken >= self.max_step:  # Improves performance by not recording every sample.
-            update_state = self._model.step(self.y, self.t)
+            self._model.record_state(self.y, self.t)
+            update_state = self._model.discrete_step()
             if update_state:
                 self.y = self._model.state_vector()
             self._last_committed_t = self.t
