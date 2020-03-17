@@ -1,5 +1,6 @@
 import cProfile
 import unittest
+from pstats import SortKey
 
 import matplotlib.pyplot as plt
 
@@ -107,7 +108,7 @@ class TestModel(unittest.TestCase):
         self.assertAlmostEqual(X[2], 1.0)
 
         X[1] = 1.0
-        m._update(X.tolist(), 0.0)
+        m._update(X, 0.0)
         self.assertAlmostEqual(X[1], 1.0)
         self.assertAlmostEqual(X[2], 1.0)
 
@@ -180,4 +181,4 @@ class TestModel(unittest.TestCase):
         # plt.show()
 
     def test_profile(self):
-        cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 0.0, 15.0, 0.01)', globals(), locals())
+        cProfile.runctx('SciPySolver(StepRK45).simulate(TwoMSDComparison(), 0.0, 40.0, 0.01)', globals(), locals(), sort=SortKey.TIME)

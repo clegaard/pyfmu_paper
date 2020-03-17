@@ -184,39 +184,41 @@ class Model:
         def model(t, npstate):
             assert not self._under_construction
             # Map state to internal state
-            self._update(npstate.tolist(), t)
+            self._update(npstate, t)
             ders = self._compute_derivatives()
             return ders
 
         return model
 
     # noinspection PyProtectedMember
-    def _update(self, state, t):
+    def _update(self, state, t, i=0):
         """
         Takes a flat state, and propagates it to the internal models.
-        Destroys the given state!
         """
         assert not self._under_construction
-        assert len(state) == self._num_states
 
-        popped, state = self._pop(state, len(self._states))
+        init_i = i
 
-        for s, v in zip(self._states, popped):
-            setattr(self, s, v)
+        for s in self._states:
+            assert i < len(state)
+            setattr(self, s, state[i])
+            i += 1
 
         for m in self._models:
             model = getattr(self, m)
-            popped, state = self._pop(state, model._num_states)
-            model._update(popped, t)
+            i += model._update(state, t, i)
 
-        assert len(state) == 0
+        num_read = i - init_i
+        assert len(state) >= num_read
+
+        return num_read
 
     def step(self, state, t, override=False):
         """
         Stores a new snapshot in the state history.
         :returns True if the model has a new continuous state (e.g., due to handling events).
         """
-        self._update(state.tolist(), t)
+        self._update(state, t)
         internal_time = self.time()
         assert np.isclose(internal_time, t)
         self._step_commit(override)
@@ -305,7 +307,7 @@ class Model:
         return self._find_sup(t, ts)
 
     def _signals_from_state(self, npstate, t):
-        self._update(npstate.tolist(), t)
+        self._update(npstate, t)
         return self.current_signals()
 
     # noinspection PyProtectedMember
@@ -318,14 +320,6 @@ class Model:
     @staticmethod
     def _der(s):
         return 'der_' + s
-
-    @staticmethod
-    def _pop(state, n):
-        assert n <= len(state)
-        popped = []
-        for i in range(n):
-            popped.append(state.pop(0))
-        return popped, state
 
     def _fmap_states(self, f_states, f_models):
         internal_data = [f_states(s) for s in self._states]
