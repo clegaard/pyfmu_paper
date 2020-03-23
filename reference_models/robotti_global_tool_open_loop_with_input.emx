@@ -8,7 +8,7 @@
 <IsMainModel>0</IsMainModel>
   <KeepParameterValues>False</KeepParameterValues>
     <LibraryPath>C:\pyfmu_paper\reference_models\robotti_global_tool_open_loop_with_input.emx</LibraryPath>
-  <TimeStamp>2020-3-23 09:04:38</TimeStamp>
+  <TimeStamp>2020-3-23 09:44:11</TimeStamp>
 </Description>
 </Information>';
  type 'Mainmodel-CC81'
