@@ -5,9 +5,9 @@ from BikeDynamicModel import BikeDynamicModel
 from BikeKinematicModel import BikeKinematicModel
 from DriverDynamic import DriverDynamic
 from DriverKinematic import DriverKinematic
-from Model import Model
-from ModelSolver import ModelSolver
-from TrackingSimulator import TrackingSimulator
+from oomodelling.Model import Model
+from oomodelling.ModelSolver import ModelSolver
+from oomodelling.TrackingSimulator import TrackingSimulator
 
 
 class SystemToTrack(Model):

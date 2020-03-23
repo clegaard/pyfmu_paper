@@ -2,7 +2,7 @@ from BikeDynamicModel import BikeDynamicModel
 from BikeKinematicModel import BikeKinematicModel
 from DriverDynamic import DriverDynamic
 from DriverKinematic import DriverKinematic
-from Model import Model
+from oomodelling.Model import Model
 
 
 class BikeModelsWithDriver(Model):

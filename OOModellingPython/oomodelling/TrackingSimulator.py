@@ -3,7 +3,7 @@ from collections import namedtuple
 import numpy as np
 from scipy.optimize import minimize
 
-from Model import Model
+from oomodelling.Model import Model
 
 CalibrationInfo = namedtuple('CalibrationInfo', 'p ts xs')
 

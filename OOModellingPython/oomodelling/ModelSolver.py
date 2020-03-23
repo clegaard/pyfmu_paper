@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp, RK45
 
-from Model import Model
+from oomodelling.Model import Model
 
 
 class ModelSolver:

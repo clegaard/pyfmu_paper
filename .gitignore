@@ -132,5 +132,5 @@ dmypy.json
 
 # pytype static type analyzer
 .pytype/
-/modelicamodels/.idea
-/python_models/.idea
+
+.idea/

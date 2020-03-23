@@ -2,8 +2,8 @@ import numpy as np
 
 from BikeDynamicModel import BikeDynamicModel
 from BikeDynamicModelWithDriver import BikeDynamicModelWithDriver
-from ModelSolver import ModelSolver
-from TrackingSimulator import TrackingSimulator
+from oomodelling.ModelSolver import ModelSolver
+from oomodelling.TrackingSimulator import TrackingSimulator
 
 
 class BikeTrackingSimulatorDynamic(TrackingSimulator):

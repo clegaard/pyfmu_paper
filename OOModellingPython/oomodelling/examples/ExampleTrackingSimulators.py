@@ -3,9 +3,9 @@ from random import random
 
 import numpy as np
 
-from Model import Model
-from ModelSolver import ModelSolver
-from TrackingSimulator import TrackingSimulator
+from oomodelling.Model import Model
+from oomodelling.ModelSolver import ModelSolver
+from oomodelling.TrackingSimulator import TrackingSimulator
 
 
 class MSDFlatInDamper(Model):

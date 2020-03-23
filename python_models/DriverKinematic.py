@@ -1,4 +1,4 @@
-from Model import Model
+from oomodelling.Model import Model
 
 
 class DriverKinematic(Model):

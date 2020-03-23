@@ -4,10 +4,10 @@ from pstats import SortKey
 
 import matplotlib.pyplot as plt
 
-from ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous, \
+from oomodelling.examples.ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous, \
     DelayExampleScenario, TwoMSDComparison
-from Model import Model
-from ModelSolver import ModelSolver
+from oomodelling.Model import Model
+from oomodelling.ModelSolver import ModelSolver
 
 
 class ModelTests(unittest.TestCase):
@@ -180,4 +180,4 @@ class ModelTests(unittest.TestCase):
         # plt.show()
 
     def test_profile(self):
-        cProfile.runctx('ModelSolver().simulate(TwoMSDComparison(), 0.0, 40.0, 0.01)', globals(), locals(), sort=SortKey.TIME)
+        cProfile.runctx('ModelSolver().simulate(TwoMSDComparison(), 0.0, 20.0, 0.01)', globals(), locals(), sort=SortKey.TIME)

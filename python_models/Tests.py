@@ -9,7 +9,7 @@ from BikeModelsWithDriver import BikeModelsWithDriver
 from BikeDynamicModelWithDriver import BikeDynamicModelWithDriver
 from BikeTrackingWithDynamic import BikeTrackingSimulatorDynamic
 from DriverDynamic import DriverDynamic
-from ModelSolver import ModelSolver
+from oomodelling.ModelSolver import ModelSolver
 from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulatorKinematic
 
 

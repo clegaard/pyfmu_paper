@@ -1,6 +1,6 @@
 from BikeDynamicModel import BikeDynamicModel
 from DriverDynamic import DriverDynamic
-from Model import Model
+from oomodelling.Model import Model
 
 
 class BikeDynamicModelWithDriver(Model):
