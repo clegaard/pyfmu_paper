@@ -1,0 +1,1695 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+ <Model version="4.6" build="4.6.3.7711">
+  <Sidops><![CDATA[model 128 184
+ description '<Information>
+ <Description>
+    <Version>4.6</Version>
+<IsMainModel>0</IsMainModel>
+  <KeepParameterValues>False</KeepParameterValues>
+    <LibraryPath>C:\pyfmu_paper\reference_models\robotti_global_tool_open_loop_with_input.emx</LibraryPath>
+  <TimeStamp>2020-3-23 09:04:38</TimeStamp>
+</Description>
+</Information>';
+ type 'Mainmodel-CC81'
+ end;
+ implementation bg
+  submodels
+   DataFromFile1 384 56
+    description '<Description>
+ <Version>4.0</Version>
+ <IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <LibraryPath>Signal\Sources\DataFromFile.emx</LibraryPath>
+ <TimeStamp>2008-1-10 10:17:38</TimeStamp>
+</Description>';
+    type DataFromFile
+     ports
+      signal out Column_2;
+      signal out Column_3;
+      signal out Column_4;
+      signal out Column_5;
+    end;
+    icon bg bottom
+     figures
+      rectangle 360 40 408 72 color 0 fill 16777215;
+      text 'filedata' 382.4 56 color 0;
+     terminals
+      Column_2 392 72 fixed;
+      Column_3 384 72 fixed;
+      Column_4 376 72 fixed;
+      Column_5 368 72 fixed;
+    end;
+    implementation eq
+// 20-sim User Editor
+// DataFromFile.dll
+parameters
+	string fileName = 'C:\Into-CPS\WP1\T1_2_Agriculture\Confidential\data\robotti_data\open_loop\sin1\setpoint_input.txt';
+variables
+	real t;
+equations
+
+	t = data(fileName, 0);
+	Column_2 = data(fileName, 1);
+	Column_3 = data(fileName, 2);
+	Column_4 = data(fileName, 3);
+	Column_5 = data(fileName, 4);
+	if( time >= 68.6586077213287) then
+		stopsimulation('End Of File Reached reading datafile "C:\Into-CPS\WP1\T1_2_Agriculture\Confidential\data\robotti_data\open_loop\sin1\setpoint_input.txt" at t=68.6586077213287');
+	end;
+implementation_end;
+   DataFromFile2 584 80
+    description '<Description>
+ <Version>4.0</Version>
+ <IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <LibraryPath>Signal\Sources\DataFromFile.emx</LibraryPath>
+ <TimeStamp>2008-1-10 10:17:38</TimeStamp>
+</Description>';
+    type DataFromFile
+     ports
+      signal out Column_2;
+      signal out Column_3;
+    end;
+    icon bg bottom
+     figures
+      rectangle 560 64 608 96 color 0 fill 16777215;
+      text 'filedata' 582.4 80 color 0;
+     terminals
+      Column_2 592 96 fixed;
+      Column_3 584 96 fixed;
+    end;
+    implementation eq
+// 20-sim User Editor
+// DataFromFile.dll
+parameters
+	string fileName = 'C:\Into-CPS\WP1\T1_2_Agriculture\Confidential\data\robotti_data\open_loop\sin2\gps_pos.txt';
+variables
+	real t;
+equations
+
+	t = data(fileName, 0);
+	Column_2 = data(fileName, 1);
+	Column_3 = data(fileName, 2);
+	if( time >= 58.5116906166077) then
+		stopsimulation('End Of File Reached reading datafile "C:\Into-CPS\WP1\T1_2_Agriculture\Confidential\data\robotti_data\open_loop\sin2\gps_pos.txt" at t=58.5116906166077');
+	end;
+implementation_end;
+   external_tool_global 88 256
+    description '<Information><Description><Version>4.0</Version><LibraryPath>C:\Program Files\20-sim 4.0\System\Submodel.emx</LibraryPath><TimeStamp>2007-10-31 11:32:54</TimeStamp><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><AllowLibraryUpdate>True</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+    type Submodel
+     ports
+      signal in velocity_tool;
+      signal out F_x;
+      signal out F_z;
+    end;
+    implementation bg
+     submodels
+      external_tool 376 232
+       description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+       type 'Submodel-Equation'
+        ports
+         signal in vel;
+         signal out F_x_out;
+         signal out F_z_out;
+       end;
+       implementation eq
+/* Equation Submodel
+Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
+*/
+parameters 
+real global m_external;
+real global tool_num;
+real global depth;
+real global A_11, A_12, A_13, A_21, A_22, A_23;
+real global v_init;
+real global e_rate;
+real global number_of_shears;
+real global tool_vel;
+real global t1, t2;
+
+variables
+real F_z_temp;
+real F_x_temp;
+
+equations
+F_z_temp = 0;
+F_x_temp = 0;
+
+
+if tool_num == 0 then 
+F_z_temp = 0;
+F_x_temp = 0;
+end;
+
+if tool_num == 1 then
+	if (m_external-time*e_rate>100) then
+		F_z_temp = (m_external-time*e_rate)*9.81;
+		F_x_temp = 0;
+	else
+	F_z_temp = 100*9.81;
+	F_x_temp = 0;
+	end;
+end;
+
+
+if tool_num == 2 then
+	if time < t1 then
+		F_x_temp = (A_11 * depth + A_12 * tool_vel + A_13)*number_of_shears;
+		F_z_temp = (A_21 * depth + A_22 * tool_vel + A_23)*number_of_shears;
+	else
+		F_x_temp = 0;
+		F_z_temp = 0;
+	end;	
+	if time > t2 then
+		F_x_temp = (A_11 * depth + A_12 * tool_vel + A_13)*number_of_shears;
+		F_z_temp = (A_21 * depth + A_22 * tool_vel + A_23)*number_of_shears;
+	end;	
+end;
+
+
+F_z_out = F_z_temp*1;
+F_x_out = F_x_temp*1;
+
+//
+//if tool_num == 2 then
+//F_x_out = A_11 * depth + A_12 * vel + A_13;
+//F_z_out = A_21 * depth + A_22 * vel + A_23;
+//end;
+
+
+
+ implementation_end;
+      plug velocity_tool 376 144;
+      plug F_x 448 400;
+      plug F_z 304 400;
+      tool_globals 184 144
+       description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+       type 'Submodel-Equation'
+       end;
+       implementation eq
+/* Equation Submodel
+Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
+*/
+parameters
+real global depth = 0.05;
+real global m_external = 500;
+real global tool_num = 0;
+real global A_11 = -3183.3;
+real global A_12 = -20.9;
+real global A_13 = 23.8;
+real global A_21 = -1932.0;
+real global A_22 = -11.6;
+real global A_23 = 89.4;
+real global v_init = 0;
+real global e_rate = 20;
+real global number_of_shears = 1;
+real global tool_vel = 1;
+real global t1 = 17;
+real global t2 = 24;
+
+
+
+
+
+
+
+implementation_end;
+     end;
+     connections
+      external_tool\F_x_out -> F_x;
+      external_tool\F_z_out -> F_z;
+      velocity_tool -> external_tool\vel;
+     end;
+    implementation_end;
+   Reciever 400 536
+    description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+    type 'Submodel-Equation'
+     ports
+      signal in Nlfl;
+      signal in Nlrr;
+      signal in Nlfr;
+      signal in Nlrl;
+    end;
+    icon bg
+     figures
+      rectangle 363 520 437 552 color 0 fill 15132390;
+      text 'name' 400 536 color 0 16;
+     terminals
+      Nlrr 376 520 fixed;
+      Nlfr 416 520 fixed;
+      Nlrl 432 520 fixed;
+    end;
+    implementation eq
+/* Equation Submodel
+Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
+*/
+variables 
+real ab;
+
+equations
+  // start typing here
+ab = Nlfl*1;
+ implementation_end;
+   robotti_global 328 368
+    description '<Information><Description><Version>4.0</Version><LibraryPath>C:\Program Files\20-sim 4.0\System\Submodel.emx</LibraryPath><TimeStamp>2007-10-31 11:32:54</TimeStamp><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><AllowLibraryUpdate>True</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+    type Submodel
+     ports
+      signal in delta_FL;
+      signal in delta_r;
+      signal in velocity;
+      signal out y4_out;
+      signal out y3_out;
+      signal out y5_out;
+      signal in F_x_in;
+      signal in F_z_in;
+      signal out Nlfl;
+      signal out Nlrl;
+      signal out Nlfr;
+      signal out Nlrr;
+      signal in R_t;
+      signal out y8_out;
+      signal in omega;
+      signal in delta_FR;
+    end;
+    icon bg shadow 11776947
+     figures
+      rectangle 199.5 312 456.5 424 color 0 fill 15132390;
+      text 'name' 320 368 color 0 16;
+     terminals
+      delta_FL 424 312 fixed;
+      delta_r 400 312 fixed;
+      velocity 288 312 fixed;
+      y4_out 240 424 fixed;
+      y3_out 224 424 fixed;
+      y5_out 256 424 fixed;
+      F_x_in 248 312 fixed;
+      F_z_in 272 312 fixed;
+      Nlfl 400 424 fixed;
+      Nlrl 432 424 fixed;
+      Nlfr 416 424 fixed;
+      Nlrr 384 424 fixed;
+      R_t 320 312 fixed;
+      y8_out 280 424 fixed;
+      omega 352 312 fixed;
+      delta_FR 440 312 fixed;
+    end;
+    implementation bg
+     submodels
+      Demux 424 448
+						specifications active 'outputs_8'
+							specification 'default'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-10-5 22:44:58</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal in input [2,1];
+   signal out output2;
+ end;
+ icon bg bottom
+  figures
+   line 129.5 64 129.5 96 width 2;
+   rectangle 125.5 64 133.5 96 color -1;
+   text '2' 134.5 91 color 8421504 8;
+  terminals
+   output1 129.5 72 fixed;
+   input 129.5 80 fixed;
+   output2 129.5 88 fixed;
+ end;
+ implementation eq
+equations
+	[output1; output2] = input;implementation_end;
+specification_end;
+							specification 'outputs_1'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output;
+   signal in input;
+ end;
+ icon bg bottom
+  figures
+   line 128 64 128 80 width 2;
+   rectangle 124 64 132 80 color -1;
+   text '1' 133 82 color 8421504 8;
+  terminals
+   input 128 72 fixed;
+   output 128 72 fixed;
+ end;
+ implementation eq
+equations
+	output = input;implementation_end;
+specification_end;
+							specification 'outputs_2'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal in input [2,1];
+   signal out output2;
+ end;
+ icon bg bottom
+  figures
+   line 128 56 128 88 width 2;
+   rectangle 124 56 132 88 color -1;
+   text '2' 133 83 color 8421504 8;
+  terminals
+   output1 128 64 fixed;
+   input 128 72 fixed;
+   output2 128 80 fixed;
+ end;
+ implementation eq
+equations
+	[output1; output2] = input;implementation_end;
+specification_end;
+							specification 'outputs_3'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal out output2;
+   signal out output3;
+   signal in input [3,1];
+ end;
+ icon bg bottom
+  figures
+   line 128 56 128 88 width 2;
+   rectangle 124 56 132 88 color -1;
+   text '3' 133 82 color 8421504 8;
+  terminals
+   output1 128 64 fixed;
+   output2 128 72 fixed;
+   output3 128 80 fixed;
+   input 128 72 fixed;
+ end;
+ implementation eq
+equations
+	[output1; output2; output3] = input;implementation_end;
+specification_end;
+							specification 'outputs_4'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out robot_beta;
+   signal out robot_x;
+   signal out robot_y;
+   signal out robot_w;
+   signal out robot_theta;
+   signal out robot_v;
+   signal out w_c_w;
+   signal out w_c_p;
+   signal in input [8,1];
+ end;
+ icon bg right
+  figures
+   line 356 97 312 97 color 0 width 2;
+   text '4' 341 103 color 8421504 8;
+  terminals
+   robot_x 320 96 fixed;
+   robot_y 328 96 fixed;
+   robot_w 344 96 fixed;
+   robot_theta 352 96 fixed;
+   input 336 96 fixed;
+ end;
+ implementation eq
+equations
+	[robot_x; robot_y; robot_w; robot_theta; robot_beta; robot_v; w_c_w; w_c_p ] = input;implementation_end;
+specification_end;
+							specification 'outputs_5'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal out output2;
+   signal out output3;
+   signal out output4;
+   signal out output5;
+   signal in input [5,1];
+ end;
+ icon bg right
+  figures
+   line 312 96 360 96 color 0 width 2;
+   rectangle 312 92 360 100 color -1;
+   text '5' 347 91 color 8421504 8;
+  terminals
+   output1 320 96 fixed;
+   output2 328 96 fixed;
+   output3 336 96 fixed;
+   output4 344 96 fixed;
+   output5 352 96 fixed;
+   input 336 96 fixed;
+ end;
+ implementation eq
+equations
+	[robot_x; robot_y; robot_w; robot_theta; robot_v] = input;implementation_end;
+specification_end;
+							specification 'outputs_6'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal out output2;
+   signal out output3;
+   signal out output4;
+   signal out output5;
+   signal out output6;
+   signal in input [6,1];
+ end;
+ icon bg bottom
+  figures
+   line 128 40 128 104 width 2;
+   rectangle 124 40 132 104 color -1;
+   text '6' 133 83 color 8421504 8;
+  terminals
+   output1 128 48 fixed;
+   output2 128 56 fixed;
+   output3 128 64 fixed;
+   output4 128 80 fixed;
+   output5 128 88 fixed;
+   output6 128 96 fixed;
+   input 128 72 fixed;
+ end;
+ implementation eq
+equations
+	[output1; output2; output3; output4; output5; output6] = input;implementation_end;
+specification_end;
+							specification 'outputs_7'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal out output2;
+   signal out output3;
+   signal out output4;
+   signal out output5;
+   signal out output6;
+   signal out output7;
+   signal in input [7,1];
+ end;
+ icon bg bottom
+  figures
+   line 128 40 128 104 width 2;
+   rectangle 124 40 132 104 color -1;
+   text '7' 133 83 color 8421504 8;
+  terminals
+   output1 128 48 fixed;
+   output2 128 56 fixed;
+   output3 128 64 fixed;
+   output4 128 72 fixed;
+   output5 128 80 fixed;
+   output6 128 88 fixed;
+   output7 128 96 fixed;
+   input 128 72 fixed;
+ end;
+ implementation eq
+equations
+	[output1; output2; output3; output4; output5; output6; output7] = input;implementation_end;
+specification_end;
+							specification 'outputs_8'
+ description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out y1;
+   signal out y2;
+   signal out y3;
+   signal out y4;
+   signal out y5;
+   signal out y6;
+   signal out y7;
+   signal out y8;
+   signal in input [13,1];
+   signal out y9;
+   signal out Nlfl;
+   signal out Nlfr;
+   signal out Nlrl;
+   signal out Nlrr;
+ end;
+ icon bg right
+  figures
+   line 384 448 464 448 color 0 width 2;
+   rectangle 384 444 464 452 color -1;
+   text '8' 435 443 color 8421504 8;
+  terminals
+   y1 392 448 fixed;
+   y2 400 448 fixed;
+   y3 408 448 fixed;
+   y4 416 448 fixed;
+   y5 432 448 fixed;
+   y6 440 448 fixed;
+   y7 448 448 fixed;
+   y8 456 448 fixed;
+   input 424 448 fixed;
+ end;
+ implementation eq
+equations
+	[y1;y2;y3;y4;y5;y6;y7;y8;y9;Nlfl;Nlfr;Nlrl;Nlrr] = input;implementation_end;
+specification_end;
+							specification 'outputs_9'
+description '<Description>
+   <Version>4.1</Version>
+  <LibraryPath>Signal\Block Diagram\Demux.emx</LibraryPath>
+  <TimeStamp>2011-3-4 15:12:50</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <AllowLibraryUpdate>True</AllowLibraryUpdate>
+</Description>';
+ type Demux
+  ports
+   signal out output1;
+   signal out output2;
+   signal out output3;
+   signal out output4;
+   signal out output5;
+   signal out output6;
+   signal out output7;
+   signal out output8;
+   signal out output9;
+   signal in input [9,1];
+ end;
+ icon bg bottom
+  figures
+   line 128 32 128 112 width 2;
+   text '9' 132 83 color 8421504 8;
+  terminals
+   output1 128 40 fixed;
+   output2 128 48 fixed;
+   output3 128 56 fixed;
+   output4 128 64 fixed;
+   output5 128 72 fixed;
+   output6 128 80 fixed;
+   output7 128 88 fixed;
+   output8 128 96 fixed;
+   output9 128 104 fixed;
+   input 128 72 fixed;
+ end;
+ implementation eq
+equations
+	[output1; output2; output3; output4; output5; output6; output7; output8; output9] = input;implementation_end;
+specification_end;
+						end;
+      Global_values 112 88
+       description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+       type 'Submodel-Equation'
+       end;
+       implementation eq
+/* Equation Submodel
+Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
+*/
+parameters
+real global y_init[9] = [0;0;-0.5;0;-0.45;0;0;0.00;0];
+real global s_init[2] = [0;0];
+//real global y0 = [0;0;0;0;0;0;0;u;0]      # Initial Conditions
+real global m_robot = 1700; // [kg] 1700
+real global T = 3.56; // [m] Trackwidth
+real global L = 1.55; // [m] Wheel base
+real global cAlphaF = 20000; // cornering stiffness Front 38323.063
+//real global cAlphaR = 20003.06343; // cornering stiffness Front
+real global front_to_rear_ratio = 0.55; // 0.73 m/1.55 m 0.47
+real global lr_ratio = 0.5; //0.9 meaning 90% on the left and 10% on the right 
+real global Cs = -0.055 ; // Torque coefficient. 
+real global SC = 0.95;
+
+real global mu = 0.60; // surface firction
+real global if_non = 1; // use nonlinear tire-model 
+real global h = 1;
+real global wheel_radius = 0.29; // wheel radius [FFO: get back to this] 0.296
+
+//real global m_ext = 500; // external load
+//real global l_ext = 1.5; // length to external load
+//real global steering_angle = 0.034905; // 2 degree
+implementation_end;
+      plug velocity 336 64;
+      plug y4_out 376 560;
+      plug y3_out 272 504;
+      plug y5_out 440 560;
+      plug F_x_in 232 200;
+      plug F_z_in 184 200;
+      plug delta_r 224 104;
+      plug Nlrl 592 616;
+      plug Nlfr 552 616;
+      plug Nlrr 512 616;
+      plug R_t 432 72;
+      plug y8_out 664 520;
+      plug omega 312 104;
+      plug delta_FR 520 104;
+      plug Nlfl 632 616;
+      plug delta_FL 616 128;
+      Robotti_model 408 344
+       description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+       type 'Submodel-Equation'
+        ports
+         signal in delta_fl;
+         signal in delta_r;
+         signal in u_r;
+         signal out y_out [13,1];
+         signal in F_x_in;
+         signal in F_z_in;
+         signal in delta_fr;
+         signal in R_t;
+         signal in omega;
+       end;
+       icon bg
+        figures
+         rectangle 235.5 284 580.5 404 color 0 fill 15132390;
+         text 'name' 416 336 color 0 16;
+        terminals
+         delta_fl 552 280 fixed;
+         delta_r 344 280 fixed;
+         u_r 392 280 fixed;
+         y_out 424 408 fixed;
+         F_x_in 288 280 fixed;
+         F_z_in 264 280 fixed;
+         delta_fr 528 280 fixed;
+         R_t 432 280 fixed;
+       end;
+       implementation eq
+/* Standard vehicle model
+Frederik Forchhammer Foldager
+ffo@eng.au.dk
+\ last edited - 16/05 2018
+*/
+parameters
+real global m_robot;
+real global T;
+real global L;
+real global front_to_rear_ratio, lr_ratio; 
+real global cAlphaF;
+real global y_init[9];
+real global mu, if_non;	
+real global l_ext;
+real global h;
+
+variables
+real Izz;
+real y1, ydot_1, y2, ydot_2,y3, ydot_3, y4, ydot_4,y5, ydot_5;
+real y6, ydot_6, y7, ydot_7,y8, y9, ydot_9;// ydot_8;
+real alphaFl, alphaFr, alphaRl, alphaRr;
+real FyflT, FyfrT, FyrlT, FyrrT;
+real Fyfl, Fyfr, Fyrl, Fyrr;
+real sum_Fyf, sum_Fyr;
+real a, b;
+real Nlfl, Nlfr, Nlrl, Nlrr;
+real M_ext;
+real m_ext_l, m_ext_r;
+real m_robot_l, m_robot_r;
+real g;
+real m_total;
+real deltaFl, deltaFr, deltaRl, deltaRr;
+real m_ext, m_robot_in;
+real beta;
+real df_kin;
+
+		
+equations // equations 
+
+// This relates to the Normal loads
+
+if T > 2.5 then
+	m_robot_in = m_robot*1;
+end;
+if T < 2.5 then
+	m_robot_in = m_robot*0.9;
+	if T == 0.9 then
+	m_robot_in = m_robot*0.8;
+	end;
+end;	
+
+
+g = 9.81;
+m_ext = F_z_in/9.81;
+m_total = m_robot_in+m_ext;
+Izz = m_total/12*(T^2+L^2);
+a = L*front_to_rear_ratio;
+b = L*(1-front_to_rear_ratio);
+
+m_ext_l = m_ext *0.5;
+m_ext_r = m_ext *0.5;
+m_robot_l = m_robot_in*(1-lr_ratio);
+m_robot_r = m_robot_in*(lr_ratio);
+M_ext = - m_ext_l * g * (l_ext);
+
+
+// steering angles
+deltaFl = delta_fl;
+deltaFr = delta_fr;
+
+// we dont steer on the rear wheels
+deltaRl = 0;
+deltaRr = 0;
+
+
+Nlrl = (a*m_robot_l*g - M_ext) / L; // Normal load rear left
+Nlrr = m_robot_r*g*(a/L); // Normal load on the rear right
+Nlfr = m_robot_r*g*(b/L)+m_ext_r*g; // Normal load on the rear right
+
+if (l_ext <= L) then
+	Nlfl = 1/L*(m_robot_l*g*b+m_ext_l*g*(L-l_ext)-h*F_x_in);
+else
+	Nlfl = 1/L * (m_robot_l*g*b-m_ext_l*g*(l_ext-L)-h*F_x_in);
+end;
+
+
+
+// relevant for kinematics
+
+if abs(R_t) > 80 then
+
+	df_kin = arctan(L/R_t);
+	beta = b/(a+b)*arctan(df_kin);
+else 
+	beta = 0;
+end;	
+
+if u_r > 0.01 then
+
+	alphaFl=arctan((y2+ a*y1) / (y8+(( T/2) * y1)))-deltaFl; 
+	alphaFr=arctan((y2+ a*y1) / (y8-(( T/2) * y1)))-deltaFr;
+	alphaRl=arctan((y2- a*y1) / (y8+(( T/2) * y1)))-deltaRl;
+	alphaRr=arctan((y2- a*y1) / (y8-(( T/2) * y1)))-deltaRr;
+	
+	
+		if (if_non == 0) then
+			FyflT = -cAlphaF*tan(alphaFl); 
+			FyfrT = -cAlphaF*tan(alphaFr);
+			FyrlT = -cAlphaF*tan(alphaRl);
+			FyrrT = -cAlphaF*tan(alphaRr);
+		else
+			FyflT = -cAlphaF*tan(alphaFl); // front left nonlinear model
+	   		if abs(FyflT) > mu*Nlfl/2 then
+	        		FyflT = -mu*Nlfl*sign(alphaFl)*(1-(mu*Nlfl) / (4*cAlphaF*abs(tan(alphaFl))));          
+	   		else
+	        		FyflT = -cAlphaF*tan(alphaFl);
+				end;
+			FyfrT = -cAlphaF*tan(alphaFr); //front right nonlinear model
+		   	if abs(FyfrT) > mu*Nlfr/2 then
+		        	FyfrT = -mu*Nlfr*sign(alphaFr)*(1-(mu*Nlfr) / (4*cAlphaF*abs(tan(alphaFr))));          
+		   	else
+		        	FyfrT = -cAlphaF*tan(alphaFr);	
+				end;
+			FyrlT = -cAlphaF*tan(alphaRl); // rear left nonlinear model
+		   	if abs(FyrlT) > mu*Nlrl/2 then
+		        	FyrlT = -mu*Nlrl*sign(alphaRl)*(1-(mu*Nlrl) / (4*cAlphaF*abs(tan(alphaRl))));          
+		   	else
+		        	FyrlT = -cAlphaF*tan(alphaRl);
+				end;
+			FyrrT = -cAlphaF*tan(alphaRr); // rear right
+		   	if abs(FyrrT) > mu*Nlrr/2 then
+		        	FyrrT = -mu*Nlrr*sign(alphaRr)*(1-(mu*Nlrr) / (4*cAlphaF*abs(tan(alphaRr))));          
+		   	else
+		        	FyrrT = -cAlphaF*tan(alphaRr);
+				end;
+		end;
+/*	
+	Fyfl=FyflT*cos(deltaFl)+0*sin(deltaFl); // 0 because we have no x-forces included
+	Fyfr=FyfrT*cos(deltaFr)+0*sin(deltaFr);
+	Fyrl=FyrlT*cos(deltaRl)+0*sin(deltaRl);
+	Fyrr=FyrrT*cos(deltaRr)+0*sin(deltaRr);
+*/
+	Fyfl=FyflT; // 0 because we have no x-forces included
+	Fyfr=FyfrT;
+	Fyrl=FyrlT;
+	Fyrr=FyrrT;
+	
+	sum_Fyf = Fyfl + Fyfr;  
+	sum_Fyr = Fyrl + Fyrr; 	
+
+else
+	sum_Fyf = 0;
+	sum_Fyr = 0;
+	
+
+end;
+
+// here we need to put in a criteria for thosing either the dynamic 4 wheel model of the kinematic model
+if u_r > 0.01 then
+	ydot_1 = 1.0/Izz * (sum_Fyf*a-sum_Fyr*b)+omega ; //yaw dynamics
+	ydot_2 = 1.0/m_total * (sum_Fyf+sum_Fyr) - y8*y1; //lateral dynamics
+	ydot_3 = y8*cos(y5)-y2*sin(y5); 
+	ydot_4 = y8*sin(y5)+y2*cos(y5);
+	ydot_5 = y1;
+	ydot_6 = y7;
+	ydot_7 = 0;
+	ydot_9 = 0;
+else
+	ydot_1 = u_r/b*sin(beta); 
+	ydot_2 = 0;
+	ydot_3 = u_r*cos(y1+beta); 
+	ydot_4 = u_r*sin(y1+beta); 
+	ydot_5 = 0;
+	ydot_6 = 0;
+	ydot_7 = 0;
+	ydot_9 = 0;
+
+
+end;
+y1 = int(ydot_1)+y_init[1];
+y2 = int(ydot_2)+y_init[2];
+y3 = int(ydot_3)+y_init[3]; //x_position;
+y4 = int(ydot_4)+y_init[4]; //Y_position;
+y5 = int(ydot_5)+y_init[5]; 
+y6 = int(ydot_6)+y_init[6];
+y7 = int(ydot_7)+y_init[7]; 
+//ydot_8 = y2*y1;
+//y8 = int(ydot_8)+y_init[8];	// forward velocity
+y8 = u_r;
+y9 = int(ydot_9)+y_init[9];
+
+
+//end;
+
+
+y_out = [y1; y2; y3; y4; y5; y6; y7; y8; y9; Nlfl; Nlfr; Nlrl; Nlrr];
+
+
+//delta_fd = delta_f; // note: find ud af noget her. 
+implementation_end;
+      Splitter1 352 136
+       description '<Description><Version>4.0</Version>
+   <LibraryPath>Signal\Block Diagram\Splitter.emx</LibraryPath>
+  <TimeStamp>2008-01-17 11:28:29</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+</Description>';
+       knot Splitter
+        ports
+         signal knot duplicatable out output [1];
+         signal knot in input [1];
+       end;
+       icon bg ellipse
+        figures
+         ellipse 348.8 132.8 355.2 139.2 color -1 fill 0;
+         ellipse 347.7 131.7 356.3 140.3 color -1;
+        terminals
+         input 352 136 fixed;
+       end;
+       implementation eq
+equations
+    collect (output) = input;
+implementation_end;
+     end;
+     connections
+      delta_FL -> Robotti_model\delta_fl;
+      delta_FR -> Robotti_model\delta_fr;
+      delta_r -> Robotti_model\delta_r;
+      Demux\Nlfl -> Nlfl;
+      Demux\Nlfr -> Nlfr;
+      Demux\Nlrl -> Nlrl;
+      Demux\Nlrr -> Nlrr;
+      Demux\y3 -> y3_out;
+      Demux\y4 -> y4_out;
+      Demux\y5 -> y5_out;
+      F_x_in -> Robotti_model\F_x_in;
+      F_z_in -> Robotti_model\F_z_in;
+      omega -> Robotti_model\omega;
+      R_t -> Robotti_model\R_t;
+      Robotti_model\y_out -> Demux\input;
+      Splitter1\output -> Robotti_model\u_r;
+      velocity -> Splitter1\input;
+      y8_out <- Demux\y8;
+     end;
+    implementation_end;
+   SignalMonitor 592 160
+    description '<Description><Version>4.0</Version><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues>
+  <LibraryPath>Signal\Block Diagram\SignalMonitor.emx</LibraryPath>
+  <TimeStamp>2007-9-26 12:14:4</TimeStamp>
+</Description>
+';
+    type SignalMonitor
+     ports
+      signal in input_x;
+      signal in input_y;
+    end;
+    icon bg bottom
+     figures
+      rectangle 576 144 608 176 color 0 fill 15132390;
+      rectangle 581.7 149.8 602.3 170.6 color 16711680 fill 11776947 width 2;
+      rectangle 583.8 152.4 599.9 168 color -1 fill 16777215;
+      line 585.9 154.7 585.9 166 color 0 fill 16777215;
+      line 584 164.4 596.5 164.4 color 0 fill 16777215;
+      line 585.5 164.1 598.4 157.7 color 255 fill 16777215;
+    end;
+    implementation eq
+variables
+	real interesting plot_x;
+	real interesting plot_y;
+equations
+	plot_x = input_x;
+	plot_y = input_y;   implementation_end;
+   Splitter1 272 216
+    description '<Description><Version>4.0</Version>
+   <LibraryPath>Signal\Block Diagram\Splitter.emx</LibraryPath>
+  <TimeStamp>2008-01-17 11:28:29</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+</Description>';
+    knot Splitter
+     ports
+      signal knot duplicatable out output [1];
+      signal knot in input [1];
+    end;
+    icon bg ellipse
+     figures
+      ellipse 268.8 212.8 275.2 219.2 color -1 fill 0;
+      ellipse 267.7 211.7 276.3 220.3 color -1;
+     terminals
+      input 272 216 fixed;
+    end;
+    implementation eq
+equations
+    collect (output) = input;
+implementation_end;
+   Steering_input 368 160
+    description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
+    type 'Submodel-Equation'
+     ports
+      signal out output_v;
+      signal out output_R_t;
+      signal out output_delta_FL;
+      signal out output_delta_FR;
+      signal out output_deltaR;
+      signal out output_omega;
+      signal in delta_left;
+      signal in delta_right;
+      signal in vel_left;
+      signal in vel_right;
+    end;
+    icon bg
+     figures
+      rectangle 320 143 416 177 color 0 fill 15132390;
+      text 'name' 376 152 color 0 16;
+     terminals
+      output_v 320 176 fixed;
+      output_R_t 344 176 fixed;
+      output_delta_FL 400 176 fixed;
+      output_delta_FR 416 176 fixed;
+      output_deltaR 384 176 fixed;
+      output_omega 360 176 fixed;
+      delta_left 392 144 fixed;
+      delta_right 376 144 fixed;
+      vel_left 360 144 fixed;
+      vel_right 344 144 fixed;
+    end;
+    implementation eq
+/* Equation Submodel
+Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
+*/
+
+parameters
+	real global wheel_radius; 
+	real global T;
+	real global L;
+	real global Cs;
+	real global SC;
+
+variables
+	real del_outer;
+	real del_inner;
+	real R1, R2;
+	real Lvel_left, Lvel_right, i_s;
+
+equations
+	i_s = 0.1;
+	if abs(delta_left) > 0 then
+
+			if vel_left > vel_right then
+					del_outer = delta_left;
+	  	      	del_inner = delta_right;
+			else
+					del_outer = delta_right;
+	   	     	del_inner = delta_left;
+			end;
+	
+		R1 = L / tan(abs(del_outer)) - T/2;
+   	R2 = L / tan(abs(del_inner)) + T/2;
+		
+		//Lvel_right = vel_right*wheel_radius;
+		//Lvel_left = vel_left*wheel_radius;
+		
+		output_R_t = (R1+R2)/2;
+		//output_omega = (vel_left+vel_right)*wheel_radius/(2*(R1+R2)/2)*0;
+		//output_omega = Lvel_left*(Lvel_right*( (1-i_s) / Lvel_left - (1-i_s)) )/T;
+		output_omega = (vel_left-vel_right)*wheel_radius * (T/2) /wheel_radius*Cs;
+	else
+		R1 = 0;
+		R2 = 0;
+
+		output_R_t = 100;
+		output_omega = 0;
+
+	end;	
+
+
+
+	output_v = (vel_left+vel_right)*wheel_radius/2 * SC;
+	output_deltaR = 0;
+	
+	output_delta_FR = delta_right;
+	output_delta_FL = delta_left;
+
+     implementation_end;
+  end;
+  connections
+   DataFromFile1\Column_2 -> Steering_input\delta_left;
+   DataFromFile1\Column_3 -> Steering_input\delta_right;
+   DataFromFile1\Column_4 -> Steering_input\vel_left;
+   DataFromFile1\Column_5 -> Steering_input\vel_right;
+   DataFromFile2\Column_3 -> SignalMonitor\input_y;
+   external_tool_global\F_x -> robotti_global\F_x_in 224 288;
+   external_tool_global\F_z -> robotti_global\F_z_in 232 248;
+   robotti_global\Nlfl -> Reciever\Nlfl;
+   robotti_global\Nlfr -> Reciever\Nlfr;
+   robotti_global\Nlrl -> Reciever\Nlrl;
+   robotti_global\Nlrr -> Reciever\Nlrr;
+   SignalMonitor\input_x <- DataFromFile2\Column_2;
+   Splitter1\output -> external_tool_global\velocity_tool;
+   Splitter1\output -> robotti_global\velocity;
+   Steering_input\output_delta_FL -> robotti_global\delta_FL;
+   Steering_input\output_delta_FR -> robotti_global\delta_FR;
+   Steering_input\output_deltaR -> robotti_global\delta_r;
+   Steering_input\output_omega -> robotti_global\omega;
+   Steering_input\output_R_t -> robotti_global\R_t;
+   Steering_input\output_v -> Splitter1\input;
+  end;
+ implementation_end;
+]]>
+</Sidops>
+ </Model>
+ <Experiments>
+     <DefaultExperiment><![CDATA[Experiment 1]]>
+</DefaultExperiment>
+  <Experiment>
+    <Name>Experiment 1</Name>
+    <CreatedBy></CreatedBy>
+    <Info></Info>
+<ExpData>
+  <VersionNumber>4.8</VersionNumber>
+  <ModelProperties>
+    <ModelProperty section="CCodeDialog" entry="SubmodelName" value="external_tool_global"/>
+    <ModelProperty section="CCodeDialog" entry="TargetName" value="FMU 2.0 export for 20-sim submodel (GitHub)"/>
+    <ModelProperty section="CCodeDialog" entry="TargetDirectory" value="c:\temp\%SUBMODEL_NAME%_tool_3"/>
+  </ModelProperties>
+  <Variables>
+   <Parameters>
+    <Variable>
+     <Name>l_ext</Name>
+     <Value>1.5</Value>
+    </Variable>
+   </Parameters>
+   <Initials>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_1_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_2_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_3_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_4_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_5_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_6_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_7_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_9_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+   </Initials>
+  </Variables>
+  <PlotSpecs>
+   <VarNames>
+    <VarName>time</VarName>
+    <VarName>robotti_global\Demux\y3</VarName>
+    <VarName>robotti_global\Robotti_model\y4</VarName>
+    <VarName>robotti_global\Robotti_model\u_r</VarName>
+    <VarName>DataFromFile2\Column_2</VarName>
+    <VarName>DataFromFile2\Column_3</VarName>
+    <VarName>Steering_input\output_omega</VarName>
+    <VarName>Steering_input\output_delta_FL</VarName>
+    <VarName>Steering_input\output_delta_FR</VarName>
+   </VarNames>
+   <Plots>
+    <Plot>
+     <PlotType>GraphPlot</PlotType>
+     <BasePlot>
+       <PlotId>1</PlotId>
+       <UseWindowsBGColor>true</UseWindowsBGColor>
+       <BGColor>15790320</BGColor>
+       <PlotIsVisible>true</PlotIsVisible>
+     </BasePlot>
+     <Grid>
+      <DrawGrid>true</DrawGrid>
+      <GridColor>15780518</GridColor>
+      <XTicks>10</XTicks>
+      <YTicks>10</YTicks>
+      <ZTicks>10</ZTicks>
+      <Use3DLook>false</Use3DLook>
+     </Grid>
+     <PlotBGColor>16777215</PlotBGColor>
+     <ShowPlotTitle>false</ShowPlotTitle>
+     <TitlePosition>1</TitlePosition>
+     <PlotTitle>y_out[1,4]</PlotTitle>
+     <ShowXValues>true</ShowXValues>
+     <Fonts>
+      <TitleFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </TitleFont>
+      <LabelFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </LabelFont>
+      <ValuesFont>
+       <Name>Arial</Name>
+       <Height>10</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </ValuesFont>
+     </Fonts>
+     <SharedXAxis>true</SharedXAxis>
+     <SharedYAxis>true</SharedYAxis>
+     <SharedZAxis>false</SharedZAxis>
+     <XAxes>
+      <Axis>
+       <Minimum>-0.5</Minimum>
+       <Maximum>32.6973428157326</Maximum>
+       <Linear>true</Linear>
+       <Scaling>3</Scaling>
+       <Label>x [m]</Label>
+      </Axis>
+     </XAxes>
+     <YAxes>
+      <Axis>
+       <Minimum>-1</Minimum>
+       <Maximum>9</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>Simulations</Label>
+      </Axis>
+      <Axis>
+       <Minimum>-2</Minimum>
+       <Maximum>18</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>GPS</Label>
+      </Axis>
+     </YAxes>
+     <ZAxes>
+     </ZAxes>
+     <Curves>
+      <Curve>
+       <LineColor>16711935</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>16711935</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>robotti_global\Demux\y3</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>robotti_global\Robotti_model\y4</VarName>
+       </YCurveData>
+      </Curve>
+      <Curve>
+       <LineColor>16711680</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>16711680</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>DataFromFile2\Column_2</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>DataFromFile2\Column_3</VarName>
+       </YCurveData>
+      </Curve>
+     </Curves>
+     <Legenda>
+      <ShowLegenda>true</ShowLegenda>
+     </Legenda>
+    </Plot>
+    <Plot>
+     <PlotType>GraphPlot</PlotType>
+     <BasePlot>
+       <PlotId>2</PlotId>
+       <UseWindowsBGColor>true</UseWindowsBGColor>
+       <BGColor>15790320</BGColor>
+       <PlotIsVisible>true</PlotIsVisible>
+     </BasePlot>
+     <Grid>
+      <DrawGrid>true</DrawGrid>
+      <GridColor>15780518</GridColor>
+      <XTicks>10</XTicks>
+      <YTicks>10</YTicks>
+      <ZTicks>10</ZTicks>
+      <Use3DLook>false</Use3DLook>
+     </Grid>
+     <PlotBGColor>16777215</PlotBGColor>
+     <ShowPlotTitle>true</ShowPlotTitle>
+     <TitlePosition>1</TitlePosition>
+     <PlotTitle>model</PlotTitle>
+     <ShowXValues>true</ShowXValues>
+     <Fonts>
+      <TitleFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </TitleFont>
+      <LabelFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </LabelFont>
+      <ValuesFont>
+       <Name>Arial</Name>
+       <Height>10</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </ValuesFont>
+     </Fonts>
+     <SharedXAxis>true</SharedXAxis>
+     <SharedYAxis>true</SharedYAxis>
+     <SharedZAxis>false</SharedZAxis>
+     <XAxes>
+      <Axis>
+       <Minimum>0</Minimum>
+       <Maximum>58.5146977188673</Maximum>
+       <Linear>true</Linear>
+       <Scaling>3</Scaling>
+       <Label>time</Label>
+      </Axis>
+     </XAxes>
+     <YAxes>
+      <Axis>
+       <Minimum>-1</Minimum>
+       <Maximum>1</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>output_delta_FL</Label>
+      </Axis>
+      <Axis>
+       <Minimum>-2</Minimum>
+       <Maximum>8</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>output_delta_FR</Label>
+      </Axis>
+      <Axis>
+       <Minimum>-2</Minimum>
+       <Maximum>8</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>u_r</Label>
+      </Axis>
+      <Axis>
+       <Minimum>-2</Minimum>
+       <Maximum>8</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>output_omega</Label>
+      </Axis>
+     </YAxes>
+     <ZAxes>
+     </ZAxes>
+     <Curves>
+      <Curve>
+       <LineColor>16711680</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>16711680</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>time</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>Steering_input\output_delta_FL</VarName>
+       </YCurveData>
+      </Curve>
+      <Curve>
+       <LineColor>16711935</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>16711935</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>time</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>Steering_input\output_delta_FR</VarName>
+       </YCurveData>
+      </Curve>
+      <Curve>
+       <LineColor>255</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>255</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>time</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>robotti_global\Robotti_model\u_r</VarName>
+       </YCurveData>
+      </Curve>
+      <Curve>
+       <LineColor>65280</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>65280</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>time</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>Steering_input\output_omega</VarName>
+       </YCurveData>
+      </Curve>
+     </Curves>
+     <Legenda>
+      <ShowLegenda>true</ShowLegenda>
+     </Legenda>
+    </Plot>
+   </Plots>
+   <PlotPanels>
+    <PlotPanel>
+     <PlotPanelId>1</PlotPanelId>
+     <PlotPanelVisible>true</PlotPanelVisible>
+     <Name>Window 1</Name>
+     <Tiling>2</Tiling>
+     <PlotIds>
+       <PlotId>1</PlotId>
+       <PlotId>2</PlotId>
+     </PlotIds>
+     <ToggleState>Base</ToggleState>
+    </PlotPanel>
+   </PlotPanels>
+   <WindowRectangles virtualDesktopWidth="4267" virtualDesktopHeight="1440">
+     <WindowRectangle monitor="0" left="0" top="0" right="2560" bottom="1440" plotpanelid="1">
+0.247266 0.0354167 0.632031 0.872917
+     </WindowRectangle>
+   </WindowRectangles>
+  </PlotSpecs>
+  <RunSpecs>
+   <SimulatorSettings>
+    <StartTime>0</StartTime>
+    <FinishTime>60</FinishTime>
+    <Warp>false</Warp>
+    <UseOutputAfterEach>true</UseOutputAfterEach>
+    <OutputAfterEach>0.1</OutputAfterEach>
+    <EventEpsilon>1e-006</EventEpsilon>
+    <AlgebraicTolerance>1e-007</AlgebraicTolerance>
+    <SteadyStateAnalysis>false</SteadyStateAnalysis>
+    <UpdateHoldInstructions>true</UpdateHoldInstructions>
+   </SimulatorSettings>
+   <IntegrationMethods>
+    <IntegrationMethod>
+     <Name>Euler</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>BackwardEuler</Name>
+     <AbsoluteTolerance>1e-005</AbsoluteTolerance>
+     <RelativeTolerance>1e-005</RelativeTolerance>
+     <AlgebraicAbsoluteTolerance>1e-005</AlgebraicAbsoluteTolerance>
+     <AlgebraicRelativeTolerance>1e-005</AlgebraicRelativeTolerance>
+     <StepSize>0.01</StepSize>
+     <Alpha>1</Alpha>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>AdamsBashforth</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKutta2</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKutta4</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKutta8</Name>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0</InitialStepSize>
+     <UseMaximumStepSize>false</UseMaximumStepSize>
+     <MaximumStepSize>0</MaximumStepSize>
+     <AbsoluteTolerance>1e-006</AbsoluteTolerance>
+     <RelativeTolerance>1e-006</RelativeTolerance>
+     <SafetyFactor>0.9</SafetyFactor>
+     <Factor1>0.33</Factor1>
+     <Factor2>6</Factor2>
+     <Beta>0</Beta>
+     <UseMaxNrSteps>false</UseMaxNrSteps>
+     <MaxNrSteps>100000</MaxNrSteps>
+     <UseStiffDetection>false</UseStiffDetection>
+     <MaxNrStiffnessSteps>1000</MaxNrStiffnessSteps>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKuttaFehlberg</Name>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0</InitialStepSize>
+     <UseMaximumStepSize>false</UseMaximumStepSize>
+     <MaximumStepSize>0</MaximumStepSize>
+     <AbsoluteTolerance>1e-006</AbsoluteTolerance>
+     <RelativeTolerance>1e-006</RelativeTolerance>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>VodeAdams</Name>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0</InitialStepSize>
+     <UseMaximumStepSize>false</UseMaximumStepSize>
+     <MaximumStepSize>0</MaximumStepSize>
+     <AbsoluteTolerance>1e-006</AbsoluteTolerance>
+     <RelativeTolerance>1e-006</RelativeTolerance>
+     <VodeUseBDF>true</VodeUseBDF>
+     <VodeUseNewton>true</VodeUseNewton>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>BDFMethod</Name>
+     <AbsoluteTolerance>1e-005</AbsoluteTolerance>
+     <RelativeTolerance>1e-005</RelativeTolerance>
+     <AlgebraicAbsoluteTolerance>1e-005</AlgebraicAbsoluteTolerance>
+     <AlgebraicRelativeTolerance>1e-005</AlgebraicRelativeTolerance>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0</InitialStepSize>
+     <UseMaximumStepSize>true</UseMaximumStepSize>
+     <MaximumStepSize>0.1</MaximumStepSize>
+     <UseFixedStepSize>false</UseFixedStepSize>
+     <FixedStepSize>0</FixedStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>MeBDFiMethod</Name>
+     <AbsoluteTolerance>1e-005</AbsoluteTolerance>
+     <RelativeTolerance>1e-005</RelativeTolerance>
+     <AlgebraicAbsoluteTolerance>1e-005</AlgebraicAbsoluteTolerance>
+     <AlgebraicRelativeTolerance>1e-005</AlgebraicRelativeTolerance>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0</InitialStepSize>
+     <UseMaximumStepSize>true</UseMaximumStepSize>
+     <MaximumStepSize>0.1</MaximumStepSize>
+     <UseFixedStepSize>false</UseFixedStepSize>
+     <FixedStepSize>0</FixedStepSize>
+    </IntegrationMethod>
+    <SelectedIntegrationMethod>9</SelectedIntegrationMethod>
+   </IntegrationMethods>
+  </RunSpecs>
+  <MultipleRun>
+   <NrSteps>10</NrSteps>
+   <CopyFromStates>false</CopyFromStates>
+   <JoinParameterVariation>true</JoinParameterVariation>
+   <ClearAfterRun>false</ClearAfterRun>
+   <RedrawAfterRun>false</RedrawAfterRun>
+   <DrawDuringSimulation>true</DrawDuringSimulation>
+   <ActionBeforeOptimization>2</ActionBeforeOptimization>
+   <CompareValue>0</CompareValue>
+   <UseCompareValue>false</UseCompareValue>
+   <MultipleRunType>MultipleRun</MultipleRunType>
+   <Minimize>true</Minimize>
+   <OptimizationVariable>SignalMonitor\input_x</OptimizationVariable>
+   <CompareVariable>SignalMonitor\input_y</CompareVariable>
+   <ResulVarUsage>UseEndValue</ResulVarUsage>
+   <Tolerance>0.001</Tolerance>
+   <OptimizationMethod>DavidsonFletcherPowell</OptimizationMethod>
+   <MultipleRunVariables>
+     <MultipleRunVariable>
+       <Name>SC</Name>
+       <Minimum>0.8</Minimum>
+       <Maximum>0.98</Maximum>
+       <SweepMethod>Linear</SweepMethod>
+       <Distribution>Uniform</Distribution>
+       <Mean>0.99</Mean>
+       <Deviation>1</Deviation>
+       <TolerancePercentage>1</TolerancePercentage>
+       <Nominal>0.99</Nominal>
+     </MultipleRunVariable>
+   </MultipleRunVariables>
+  </MultipleRun>
+  <ExportData>
+   <WriteAsText>true</WriteAsText>
+   <ReadAsText>true</ReadAsText>
+   <WriteHeader>true</WriteHeader>
+   <ReadHeader>true</ReadHeader>
+   <ReadFilename></ReadFilename>
+   <WriteFilename></WriteFilename>
+   <DoWrite>false</DoWrite>
+   <ExportVariables>
+   </ExportVariables>
+   <ImportVariables>
+   </ImportVariables>
+  </ExportData>
+  <BreakPoints>
+  </BreakPoints>
+  <AnimationPlayback>
+   <PlaybackSpeed>1</PlaybackSpeed>
+  </AnimationPlayback>
+</ExpData>
+  </Experiment>
+</Experiments>
+</Document>
