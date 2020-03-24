@@ -135,3 +135,5 @@ dmypy.json
 
 .idea/
 /fmpy_tracking_cosim/TrackingSimulator/
+/fmpy_tracking_cosim/Steering_input/
+/fmpy_tracking_cosim/robotti_global/
