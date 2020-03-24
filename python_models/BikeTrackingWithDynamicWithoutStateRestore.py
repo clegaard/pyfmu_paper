@@ -6,7 +6,7 @@ from oomodelling.ModelSolver import ModelSolver
 from oomodelling.TrackingSimulator import TrackingSimulator
 
 
-class BikeTrackingSimulatorDynamic(TrackingSimulator):
+class BikeTrackingWithDynamicWithoutStateRestore(TrackingSimulator):
     def __init__(self):
         super().__init__()
 
@@ -32,14 +32,16 @@ class BikeTrackingSimulatorDynamic(TrackingSimulator):
         m.deltaf = lambda: self.to_track.ddriver.steering(-(tf - m.time()))
         assert np.isclose(self.to_track.dbike.X(-(tf - t0)), tracked_solutions[0][0])
         assert np.isclose(self.to_track.dbike.Y(-(tf - t0)), tracked_solutions[1][0])
-        m.x = self.to_track.dbike.x(-(tf - t0))
-        m.X = self.to_track.dbike.X(-(tf - t0))
-        m.y = self.to_track.dbike.y(-(tf - t0))
-        m.Y = self.to_track.dbike.Y(-(tf - t0))
-        m.vx = self.to_track.dbike.vx(-(tf - t0))
-        m.vy = self.to_track.dbike.vy(-(tf - t0))
-        m.psi = self.to_track.dbike.psi(-(tf - t0))
-        m.dpsi = self.to_track.dbike.dpsi(-(tf - t0))
+        # Set the state to the past state: This is the main different wrt to BikeTrackingWithDynamic.
+        # Here, the state is set to the inaccurate past state.
+        m.x = self.tracking.x(-(tf - t0))
+        m.X = self.tracking.X(-(tf - t0))
+        m.y = self.tracking.y(-(tf - t0))
+        m.Y = self.tracking.Y(-(tf - t0))
+        m.vx = self.tracking.vx(-(tf - t0))
+        m.vy = self.tracking.vy(-(tf - t0))
+        m.psi = self.tracking.psi(-(tf - t0))
+        m.dpsi = self.tracking.dpsi(-(tf - t0))
 
         sol = ModelSolver().simulate(m, t0, tf, self.time_step, error_space)
         new_trajectories = sol.y

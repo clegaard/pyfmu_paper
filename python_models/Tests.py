@@ -8,6 +8,7 @@ from BikeKinematicModelWithDriver import BikeKinematicModelWithDriver
 from BikeModelsWithDriver import BikeModelsWithDriver
 from BikeDynamicModelWithDriver import BikeDynamicModelWithDriver
 from BikeTrackingWithDynamic import BikeTrackingSimulatorDynamic
+from BikeTrackingWithDynamicWithoutStateRestore import BikeTrackingWithDynamicWithoutStateRestore
 from DriverDynamic import DriverDynamic
 from oomodelling.ModelSolver import ModelSolver
 from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulatorKinematic
@@ -159,7 +160,38 @@ class TestExperiments(unittest.TestCase):
     def test_tracking_dynamic(self):
         m = BikeTrackingSimulatorDynamic()
         # Bump the Caf after some time
-        m.to_track.dbike.Caf = lambda d: 800 if m.time() < 7.0 else 100
+        m.to_track.dbike.Caf = lambda: 800 if m.time() < 7.0 else 100
+        m.tolerance = 10
+        m.horizon = 5.0
+        m.nsamples = 20
+        m.time_step = 0.1
+        m.conv_xatol = 30.0
+        m.conv_fatol = 1.0
+
+        m.to_track.ddriver.nperiods = 1
+
+        ModelSolver().simulate(m, 0.0, 20, 0.1)
+        _, (p1, p2, p3, p4) = plt.subplots(1, 4)
+
+        p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
+        p1.legend()
+        p2.plot(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'], label='dX vs dY')
+        p2.plot(m.tracking.signals['X'], m.tracking.signals['Y'], label='~dX vs ~dY')
+        for calib in m.recalibration_history:
+            p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
+        p2.legend()
+        p3.plot(m.signals['time'], m.signals['error'], label='error')
+        p3.legend()
+        p4.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['Caf'], label='real_Caf')
+        p4.plot(m.tracking.signals['time'], m.tracking.signals['Caf'], label='approx_Caf')
+        p4.legend()
+        plt.show()
+
+
+    def test_tracking_dynamic_without_state_restore(self):
+        m = BikeTrackingWithDynamicWithoutStateRestore()
+        # Bump the Caf after some time
+        m.to_track.dbike.Caf = lambda: 800 if m.time() < 7.0 else 100
         m.tolerance = 10
         m.horizon = 5.0
         m.nsamples = 20
