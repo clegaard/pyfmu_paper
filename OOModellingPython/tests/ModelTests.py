@@ -4,8 +4,9 @@ from pstats import SortKey
 
 import matplotlib.pyplot as plt
 
-from oomodelling.examples.ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, MSDAutonomous, \
-    DelayExampleScenario, TwoMSDComparison
+from oomodelling.examples.ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, \
+    MSDAutonomous, \
+    DelayExampleScenario, TwoMSDComparison, DelayRewireInput
 from oomodelling.Model import Model
 from oomodelling.ModelSolver import ModelSolver
 
@@ -67,7 +68,6 @@ class ModelTests(unittest.TestCase):
         for s in signals:
             for a, b in zip(m.m1.signals[s], m.m2.md.signals[s]):
                 self.assertAlmostEqual(a, b)
-
 
     def test_msd_timedep(self):
         m = MSDTimeDep()
@@ -133,6 +133,16 @@ class ModelTests(unittest.TestCase):
         self.assertAlmostEqual(m.u.signals['F'][-1], 4.0)
         self.assertAlmostEqual(m.d.signals['d'][-1], 0.0)
 
+    def test_delay_rewire_input(self):
+        m = DelayRewireInput()
+        ModelSolver().simulate(m, 0.0, 5, 0.01)
+        # plt.plot(m.signals['time'], m.d.signals['u'])
+        # plt.plot(m.signals['time'], m.d.signals['d'])
+        # plt.show()
+        idx = int(0.5 / 0.01)
+        self.assertTrue(m.d.signals['u'][idx] > 0.1)
+        self.assertAlmostEqual(m.d.signals['d'][idx], 0.0)
+
     def test_search(self):
         sample = [0, 1, 2, 3, 4, 5, 6]
         self.assertEqual(0, Model._find_sup(0.1, sample))
@@ -165,14 +175,14 @@ class ModelTests(unittest.TestCase):
 
     def test_change_model_input_on_the_fly_forbidden(self):
         m1 = MassSpringDamperFlat()
-        m1.F = lambda d: 0.0 if m1.time() < 4.0 else 4.0
+        m1.F = lambda: 0.0 if m1.time() < 4.0 else 4.0
         ModelSolver().simulate(m1, 0.0, 10, 0.01)
         # plt.plot(m1.signals['time'], m1.signals['F'])
         # plt.plot(m1.signals['time'], m1.signals['x'])
         # plt.show()
 
         m2 = MassSpringDamperFlat()
-        m2.F = lambda d: 0.0 if m2.time() < 1.0 else 4.0
+        m2.F = lambda: 0.0 if m2.time() < 1.0 else 4.0
 
         ModelSolver().simulate(m2, 0.0, 10, 0.01)
         # plt.plot(m2.signals['time'], m2.signals['F'])

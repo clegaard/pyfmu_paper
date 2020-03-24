@@ -1,3 +1,5 @@
+import math
+
 from oomodelling.Model import Model
 
 
@@ -85,6 +87,14 @@ class DelayExample(Model):
         super().__init__()
         self.u = self.input(lambda: 0.0)
         self.d = self.var(lambda: self.u(-1.0))
+        self.save()
+
+
+class DelayRewireInput(Model):
+    def __init__(self):
+        super().__init__()
+        self.d = DelayExample()
+        self.d.u = lambda: math.sin(self.time())
         self.save()
 
 

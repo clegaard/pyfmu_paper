@@ -2,8 +2,8 @@ import unittest
 from random import random, seed
 import matplotlib.pyplot as plt
 
-from ExampleTrackingSimulators import MSDTrackingSimulator
-from ModelSolver import ModelSolver
+from oomodelling.examples.ExampleTrackingSimulators import MSDTrackingSimulator
+from oomodelling.ModelSolver import ModelSolver
 
 
 class TrackingSimulatorTests(unittest.TestCase):

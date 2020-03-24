@@ -275,8 +275,6 @@ class Model:
         return signal
 
     def _get_signal_function(self, name, fun):
-        assert self._under_construction
-
         def signal(d=None):
             if d is None or len(self.signals[name]) == 0 or np.isclose(d, 0.0):
                 value = fun()
@@ -397,14 +395,13 @@ class Model:
             if key in self._current_state_values.keys():
                 self._current_state_values[key] = value
             elif key in self._inputs:
-                def resolve(d=None):
-                    # works for states, parameters, and also other inputs
-                    if callable(value):
-                        return value(d)
-                    else:
-                        return value
-
-                super().__setattr__(key, resolve)
+                # works for states, parameters, and also other inputs
+                # and preserves the ability to get the history of an input.
+                if callable(value):
+                    fun = value
+                else:
+                    fun = lambda: value
+                super().__setattr__(key, self._get_signal_function(key, fun))
             else:
                 assert key not in self._vars, "Not allowed to redefine vars. Define them as inputs if you want to " \
                                               "assign them after the constructor. "

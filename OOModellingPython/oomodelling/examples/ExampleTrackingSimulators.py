@@ -42,7 +42,7 @@ class MSDTrackingSimulator(TrackingSimulator):
         self.to_track = MSDFlatInDamper()
 
         self.tracking = MSDFlatInDamper()
-        self.tracking.d = lambda _: 1.0
+        self.tracking.d = lambda: 1.0
 
         self.match_signals(self.to_track.x, self.tracking.x)
         self.match_signals(self.to_track.v, self.tracking.v)
@@ -55,9 +55,9 @@ class MSDTrackingSimulator(TrackingSimulator):
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
         new_d = new_parameters[0]
         m = MSDFlatInDamper()
-        m.d = lambda d: new_d
+        m.d = lambda: new_d
         # Rewrite control input to mimic the past behavior.
-        m.F = lambda d: self.to_track.F(-(tf - m.time()))
+        m.F = lambda: self.to_track.F(-(tf - m.time()))
         assert np.isclose(self.to_track.x(-(tf - t0)), tracked_solutions[0][0])
         assert np.isclose(self.to_track.v(-(tf - t0)), tracked_solutions[1][0])
         m.x = self.to_track.x(-(tf - t0))
@@ -77,7 +77,7 @@ class MSDTrackingSimulator(TrackingSimulator):
 
     def update_tracking_model(self, new_present_state, new_parameter):
         self.tracking.record_state(new_present_state, self.time(), override=True)
-        self.tracking.d = lambda _: new_parameter[0]
+        self.tracking.d = lambda: new_parameter[0]
         assert np.isclose(new_present_state[self.X_idx], self.tracking.x())
         assert np.isclose(new_present_state[self.V_idx], self.tracking.v())
 
