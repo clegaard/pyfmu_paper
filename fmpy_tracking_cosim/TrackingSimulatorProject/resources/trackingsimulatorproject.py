@@ -106,7 +106,7 @@ class TrackingSimulatorProject(Fmi2Slave):
         x = self.model.state_vector()
         self.model.record_state(x, self.start_time)
 
-    def do_step(self, current_time: float, step_size: float) -> bool:
+    def do_step(self, current_time: float, step_size: float, no_set_fmu_state_prior: bool) -> bool:
         f = self.model.derivatives()
         x = self.model.state_vector()
         sol = solve_ivp(f, (current_time, current_time+step_size), x, method=StepRK45, max_step=step_size, model=self.model, t_eval=None)
