@@ -134,3 +134,4 @@ dmypy.json
 .pytype/
 
 .idea/
+/fmpy_tracking_cosim/TrackingSimulator/
