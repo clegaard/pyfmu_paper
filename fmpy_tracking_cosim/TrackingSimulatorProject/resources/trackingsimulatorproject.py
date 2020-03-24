@@ -81,7 +81,7 @@ class TrackingSimulatorProject(Fmi2Slave):
                                define_attribute=True,
                                value_reference=None)
         self.tracking_Y = 0.0
-        self.register_variable("tracking_X",
+        self.register_variable("tracking_Y",
                                data_type=Fmi2DataTypes.real,
                                causality=Fmi2Causality.output,
                                variability=Fmi2Variability.continuous,

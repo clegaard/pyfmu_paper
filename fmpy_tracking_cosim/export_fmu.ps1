@@ -3,7 +3,7 @@ $output = "TrackingSimulator"
 Remove-Item $output"\resources" -Recurse
 Remove-Item $output"\binaries" -Recurse
 
-& pyfmu export -p .\TrackingSimulatorProject\ -o TrackingSimulator
+& pyfmu export -p .\TrackingSimulatorProject\ -o $output
 
 $targetZip = $output+".zip"
 
@@ -13,3 +13,5 @@ $fmu = $output + ".fmu"
 
 Remove-Item $fmu
 Rename-Item $targetZip $output".fmu" -Force
+
+Remove-Item $output -Recurse
