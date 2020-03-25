@@ -1,0 +1,13 @@
+L = wheelbase
+T = trackwidth
+
+R = turning radius of the vechicle
+delta_c is the wheel turning angle in radians  
+
+R = L / tan^-1(delta_c);
+
+delta_outer = tan^-1(L/(R+0.5T))   //in radians
+delta_inner = tan^-1(L/(R+0.5T))   //in radians
+
+
+And if R is large means that delta_inner and delta_outer is 0 => the car drives straight. 
