@@ -7,248 +7,58 @@
     <Version>4.6</Version>
 <IsMainModel>0</IsMainModel>
   <KeepParameterValues>False</KeepParameterValues>
-    <LibraryPath>C:\srcctrl\christian\pyfmu_paper\reference_models\robotti_global_tool_open_loop_with_input.emx</LibraryPath>
-  <TimeStamp>2020-3-25 15:56:06</TimeStamp>
+    <LibraryPath>C:\srcctrl\christian\pyfmu_paper\reference_models\robotti_global_tool_open_loop_with_sin_input.emx</LibraryPath>
+  <TimeStamp>2020-3-25 16:50:01</TimeStamp>
 </Description>
 </Information>';
  type 'Mainmodel-CC81'
  end;
  implementation bg
   submodels
-   DataFromFile1 384 56
-    description '<Description>
- <Version>4.0</Version>
- <IsMainModel>1</IsMainModel>
- <KeepParameterValues>False</KeepParameterValues>
- <LibraryPath>Signal\Sources\DataFromFile.emx</LibraryPath>
- <TimeStamp>2008-1-10 10:17:38</TimeStamp>
+   Constant 112 128
+    description '<Description><Version>4.0</Version><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues>
+   <LibraryPath>Signal\Sources\Constant.emx</LibraryPath>
+  <TimeStamp>2007-10-19 14:48:44</TimeStamp>
 </Description>';
-    type DataFromFile
+    type Constant
      ports
-      signal out Column_1;
-      signal out Column_2;
-      signal out Column_3;
-      signal out Column_4;
-      signal out Column_5;
+      signal out output;
     end;
     icon bg bottom
      figures
-      rectangle 360 40 408 72 color 0 fill 16777215;
-      text 'filedata' 382.4 56 color 0;
-     terminals
-      Column_2 392 72 fixed;
-      Column_3 384 72 fixed;
-      Column_4 376 72 fixed;
-      Column_5 368 72 fixed;
+      rectangle 96.1 112 127.9 144 color 0 fill 15132390;
+      line 100.9 123.6 122.9 123.6 color 16711680 width 2;
+      line 98.2 134.7 123.9 134.7 color 0;
+      line 100.5 118.7 100.5 137 color 0;
     end;
     implementation eq
-// 20-sim User Editor
-// DataFromFile.dll
 parameters
-	string fileName = 'C:\srcctrl\christian\pyfmu_paper\reference_models\inputs\setpoint_input.txt';
+	real C = 0.0;		// output value
 equations
-
-	Column_1 = data(fileName, 0);
-	Column_2 = data(fileName, 1);
-	Column_3 = data(fileName, 2);
-	Column_4 = data(fileName, 3);
-	Column_5 = data(fileName, 4);
-	if( time >= 58.5243985652924) then
-		stopsimulation('End Of File Reached reading datafile "C:\srcctrl\christian\pyfmu_paper\reference_models\inputs\setpoint_input.txt" at t=58.5243985652924');
-	end;
-implementation_end;
-   DataFromFile2 584 80
-    description '<Description>
- <Version>4.0</Version>
- <IsMainModel>1</IsMainModel>
- <KeepParameterValues>False</KeepParameterValues>
- <LibraryPath>Signal\Sources\DataFromFile.emx</LibraryPath>
- <TimeStamp>2008-1-10 10:17:38</TimeStamp>
+	output = C;
+     implementation_end;
+   Constant1 472 128
+    description '<Description><Version>4.0</Version><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues>
+   <LibraryPath>Signal\Sources\Constant.emx</LibraryPath>
+  <TimeStamp>2007-10-19 14:48:44</TimeStamp>
 </Description>';
-    type DataFromFile
+    type Constant
      ports
-      signal out Column_1;
-      signal out Column_2;
-      signal out Column_3;
+      signal out output;
     end;
     icon bg bottom
      figures
-      rectangle 560 64 608 96 color 0 fill 16777215;
-      text 'filedata' 582.4 80;
-     terminals
-      Column_2 592 96 fixed;
-      Column_3 584 96 fixed;
+      rectangle 456.1 112 487.9 144 color 0 fill 15132390;
+      line 460.9 123.6 482.9 123.6 color 16711680 width 2;
+      line 458.2 134.7 483.9 134.7 color 0;
+      line 460.5 118.7 460.5 137 color 0;
     end;
     implementation eq
-// 20-sim User Editor
-// DataFromFile.dll
 parameters
-	string fileName = 'C:\srcctrl\christian\pyfmu_paper\reference_models\inputs\gps_pos.txt';
+	real C = 1.0;		// output value
 equations
-
-	Column_1 = data(fileName, 0);
-	Column_2 = data(fileName, 1);
-	Column_3 = data(fileName, 2);
-	if( time >= 58.5116906166077) then
-		stopsimulation('End Of File Reached reading datafile "C:\srcctrl\christian\pyfmu_paper\reference_models\inputs\gps_pos.txt" at t=58.5116906166077');
-	end;
-implementation_end;
-   external_tool_global 88 256
-    description '<Information><Description><Version>4.0</Version><LibraryPath>C:\Program Files\20-sim 4.0\System\Submodel.emx</LibraryPath><TimeStamp>2007-10-31 11:32:54</TimeStamp><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><AllowLibraryUpdate>True</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
-    type Submodel
-     ports
-      signal in velocity_tool;
-      signal out F_x;
-      signal out F_z;
-    end;
-    implementation bg
-     submodels
-      external_tool 376 232
-       description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
-       type 'Submodel-Equation'
-        ports
-         signal in vel;
-         signal out F_x_out;
-         signal out F_z_out;
-       end;
-       implementation eq
-/* Equation Submodel
-Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
-*/
-parameters 
-real global m_external;
-real global tool_num;
-real global depth;
-real global A_11, A_12, A_13, A_21, A_22, A_23;
-real global v_init;
-real global e_rate;
-real global number_of_shears;
-real global tool_vel;
-real global t1, t2;
-
-variables
-real F_z_temp;
-real F_x_temp;
-
-equations
-F_z_temp = 0;
-F_x_temp = 0;
-
-
-if tool_num == 0 then 
-F_z_temp = 0;
-F_x_temp = 0;
-end;
-
-if tool_num == 1 then
-	if (m_external-time*e_rate>100) then
-		F_z_temp = (m_external-time*e_rate)*9.81;
-		F_x_temp = 0;
-	else
-	F_z_temp = 100*9.81;
-	F_x_temp = 0;
-	end;
-end;
-
-
-if tool_num == 2 then
-	if time < t1 then
-		F_x_temp = (A_11 * depth + A_12 * tool_vel + A_13)*number_of_shears;
-		F_z_temp = (A_21 * depth + A_22 * tool_vel + A_23)*number_of_shears;
-	else
-		F_x_temp = 0;
-		F_z_temp = 0;
-	end;	
-	if time > t2 then
-		F_x_temp = (A_11 * depth + A_12 * tool_vel + A_13)*number_of_shears;
-		F_z_temp = (A_21 * depth + A_22 * tool_vel + A_23)*number_of_shears;
-	end;	
-end;
-
-
-F_z_out = F_z_temp*1;
-F_x_out = F_x_temp*1;
-
-//
-//if tool_num == 2 then
-//F_x_out = A_11 * depth + A_12 * vel + A_13;
-//F_z_out = A_21 * depth + A_22 * vel + A_23;
-//end;
-
-
-
- implementation_end;
-      plug velocity_tool 376 144;
-      plug F_x 448 400;
-      plug F_z 304 400;
-      tool_globals 184 144
-       description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
-       type 'Submodel-Equation'
-       end;
-       implementation eq
-/* Equation Submodel
-Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
-*/
-parameters
-real global depth = 0.05;
-real global m_external = 500;
-real global tool_num = 0;
-real global A_11 = -3183.3;
-real global A_12 = -20.9;
-real global A_13 = 23.8;
-real global A_21 = -1932.0;
-real global A_22 = -11.6;
-real global A_23 = 89.4;
-real global v_init = 0;
-real global e_rate = 20;
-real global number_of_shears = 1;
-real global tool_vel = 1;
-real global t1 = 17;
-real global t2 = 24;
-
-
-
-
-
-
-
-implementation_end;
-     end;
-     connections
-      external_tool\F_x_out -> F_x;
-      external_tool\F_z_out -> F_z;
-      velocity_tool -> external_tool\vel;
-     end;
-    implementation_end;
-   Reciever 400 536
-    description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
-    type 'Submodel-Equation'
-     ports
-      signal in Nlfl;
-      signal in Nlrr;
-      signal in Nlfr;
-      signal in Nlrl;
-    end;
-    icon bg
-     figures
-      rectangle 363 520 437 552 color 0 fill 15132390;
-      text 'name' 400 536 color 0 16;
-     terminals
-      Nlrr 376 520 fixed;
-      Nlfr 416 520 fixed;
-      Nlrl 432 520 fixed;
-    end;
-    implementation eq
-/* Equation Submodel
-Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
-*/
-variables 
-real ab;
-
-equations
-  // start typing here
-ab = Nlfl*1;
- implementation_end;
+	output = C;
+     implementation_end;
    robotti_global 328 368
     description '<Information><Description><Version>4.0</Version><LibraryPath>C:\Program Files\20-sim 4.0\System\Submodel.emx</LibraryPath><TimeStamp>2007-10-31 11:32:54</TimeStamp><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><AllowLibraryUpdate>True</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
     type Submodel
@@ -759,8 +569,11 @@ real deltaFl, deltaFr, deltaRl, deltaRr;
 real m_ext, m_robot_in;
 real beta;
 real df_kin;
+real useNLFLT;
+real useNLFRT;
+real useNLRLT;
+real useNLBLT;
 
-		
 equations // equations 
 
 // This relates to the Normal loads
@@ -969,34 +782,40 @@ implementation_end;
       y8_out <- Demux\y8;
      end;
     implementation_end;
-   SignalMonitor 592 160
+   Sine 560 192
     description '<Description><Version>4.0</Version><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues>
-  <LibraryPath>Signal\Block Diagram\SignalMonitor.emx</LibraryPath>
-  <TimeStamp>2007-9-26 12:14:4</TimeStamp>
-</Description>
-';
-    type SignalMonitor
+   <LibraryPath>Signal\Sources\WaveGenerator-Sine.emx</LibraryPath>
+  <TimeStamp>2007-9-27 16:12:6</TimeStamp>
+</Description>';
+    type 'WaveGenerator-Sine'
      ports
-      signal in input_x;
-      signal in input_y;
+      signal out output;
     end;
     icon bg bottom
      figures
-      rectangle 576 144 608 176 color 0 fill 15132390;
-      rectangle 581.7 149.8 602.3 170.6 color 16711680 fill 11776947 width 2;
-      rectangle 583.8 152.4 599.9 168 color -1 fill 16777215;
-      line 585.9 154.7 585.9 166 color 0 fill 16777215;
-      line 584 164.4 596.5 164.4 color 0 fill 16777215;
-      line 585.5 164.1 598.4 157.7 color 255 fill 16777215;
+      group
+       rectangle 544 176 576 208 color 0 fill 15132390;
+       line 548.5 182.4 548.5 201.6 color 0;
+       line 574.1 192 545.3 192 color 0;
+       spline 548.9 191.9 552.1 183.8 555.3 191.9 558.6 200 561.7 191.9 564.8 183.8 568.1 191.9 571.6 200.2 574.8 192.2 color 16711680;
+      end;
     end;
     implementation eq
+parameters
+	real amplitude = 0.5;			// amplitude of the wave
+	real omega = 0.314 {rad/s};		// angular frequency of the wave
 variables
-	real interesting plot_x;
-	real interesting plot_y;
+	boolean hidden change;
+	real hidden half;
 equations
-	plot_x = input_x;
-	plot_y = input_y;   implementation_end;
-   Splitter1 272 216
+	"calculate at least 2 points per cycle to get a triangle"
+	half = pi / omega;
+	change = frequencyevent (half, half / 2);
+
+	"calculate the sine wave"
+	output = amplitude * sin ( omega * time);
+implementation_end;
+   Splitter1 192 240
     description '<Description><Version>4.0</Version>
    <LibraryPath>Signal\Block Diagram\Splitter.emx</LibraryPath>
   <TimeStamp>2008-01-17 11:28:29</TimeStamp>
@@ -1010,126 +829,50 @@ equations
     end;
     icon bg ellipse
      figures
-      ellipse 268.8 212.8 275.2 219.2 color -1 fill 0;
-      ellipse 267.7 211.7 276.3 220.3 color -1;
+      ellipse 188.8 236.8 195.2 243.2 color -1 fill 0;
+      ellipse 187.7 235.7 196.3 244.3 color -1;
      terminals
-      input 272 216 fixed;
+      input 192 240 fixed;
     end;
     implementation eq
 equations
     collect (output) = input;
 implementation_end;
-   Steering_input 368 160
-    description '<Information><Description><Version>4.0</Version><LibraryPath>Template\Submodel-Equation.emx</LibraryPath><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues><TimeStamp>2007-11-1 22:32:1</TimeStamp><AllowLibraryUpdate>False</AllowLibraryUpdate><Configuration><struct><member><name>DocumentationMask</name><value><struct></struct></value></member></struct></Configuration></Description></Information>';
-    type 'Submodel-Equation'
+   Splitter2 456 256
+    description '<Description><Version>4.0</Version>
+   <LibraryPath>Signal\Block Diagram\Splitter.emx</LibraryPath>
+  <TimeStamp>2008-01-17 11:28:29</TimeStamp>
+<IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+</Description>';
+    knot Splitter
      ports
-      signal out output_v;
-      signal out output_R_t;
-      signal out output_delta_FL;
-      signal out output_delta_FR;
-      signal out output_deltaR;
-      signal out output_omega;
-      signal in delta_left;
-      signal in delta_right;
-      signal in vel_left;
-      signal in vel_right;
+      signal knot duplicatable out output [1];
+      signal knot in input [1];
     end;
-    icon bg
+    icon bg ellipse
      figures
-      rectangle 320 143 416 177 color 0 fill 15132390;
-      text 'name' 376 152 color 0 16;
+      ellipse 452.8 252.8 459.2 259.2 color -1 fill 0;
+      ellipse 451.7 251.7 460.3 260.3 color -1;
      terminals
-      output_v 320 176 fixed;
-      output_R_t 344 176 fixed;
-      output_delta_FL 400 176 fixed;
-      output_delta_FR 416 176 fixed;
-      output_deltaR 384 176 fixed;
-      output_omega 360 176 fixed;
-      delta_left 392 144 fixed;
-      delta_right 376 144 fixed;
-      vel_left 360 144 fixed;
-      vel_right 344 144 fixed;
+      input 456 256 fixed;
     end;
     implementation eq
-/* Equation Submodel
-Enter you equations here. You can use the Toolbar buttons at the left ( Add , f(x) etc. ).
-*/
-
-parameters
-	real global wheel_radius; 
-	real global T;
-	real global L;
-	real global Cs;
-	real global SC;
-
-variables
-	real del_outer;
-	real del_inner;
-	real R1, R2;
-	real Lvel_left, Lvel_right, i_s;
-
 equations
-	i_s = 0.1;
-	if abs(delta_left) > 0 then
-
-			if vel_left > vel_right then
-					del_outer = delta_left;
-	  	      	del_inner = delta_right;
-			else
-					del_outer = delta_right;
-	   	     	del_inner = delta_left;
-			end;
-	
-		R1 = L / tan(abs(del_outer)) - T/2;
-   	R2 = L / tan(abs(del_inner)) + T/2;
-		
-		//Lvel_right = vel_right*wheel_radius;
-		//Lvel_left = vel_left*wheel_radius;
-		
-		output_R_t = (R1+R2)/2;
-		//output_omega = (vel_left+vel_right)*wheel_radius/(2*(R1+R2)/2)*0;
-		//output_omega = Lvel_left*(Lvel_right*( (1-i_s) / Lvel_left - (1-i_s)) )/T;
-		output_omega = (vel_left-vel_right)*wheel_radius * (T/2) /wheel_radius*Cs;
-	else
-		R1 = 0;
-		R2 = 0;
-
-		output_R_t = 100;
-		output_omega = 0;
-
-	end;	
-
-
-
-	output_v = (vel_left+vel_right)*wheel_radius/2 * SC;
-	output_deltaR = 0;
-	
-	output_delta_FR = delta_right;
-	output_delta_FL = delta_left;
-
-     implementation_end;
+    collect (output) = input;
+implementation_end;
   end;
   connections
-   DataFromFile1\Column_2 -> Steering_input\delta_left;
-   DataFromFile1\Column_3 -> Steering_input\delta_right;
-   DataFromFile1\Column_4 -> Steering_input\vel_left;
-   DataFromFile1\Column_5 -> Steering_input\vel_right;
-   DataFromFile2\Column_3 -> SignalMonitor\input_y;
-   external_tool_global\F_x -> robotti_global\F_x_in 224 288;
-   external_tool_global\F_z -> robotti_global\F_z_in 232 248;
-   robotti_global\Nlfl -> Reciever\Nlfl;
-   robotti_global\Nlfr -> Reciever\Nlfr;
-   robotti_global\Nlrl -> Reciever\Nlrl;
-   robotti_global\Nlrr -> Reciever\Nlrr;
-   SignalMonitor\input_x <- DataFromFile2\Column_2;
-   Splitter1\output -> external_tool_global\velocity_tool;
-   Splitter1\output -> robotti_global\velocity;
-   Steering_input\output_delta_FL -> robotti_global\delta_FL;
-   Steering_input\output_delta_FR -> robotti_global\delta_FR;
-   Steering_input\output_deltaR -> robotti_global\delta_r;
-   Steering_input\output_omega -> robotti_global\omega;
-   Steering_input\output_R_t -> robotti_global\R_t;
-   Steering_input\output_v -> Splitter1\input;
+   Constant\output -> Splitter1\input;
+   Constant1\output -> robotti_global\velocity;
+   Sine\output -> Splitter2\input;
+   Splitter1\output -> robotti_global\delta_r;
+   Splitter1\output -> robotti_global\F_x_in;
+   Splitter1\output -> robotti_global\F_z_in;
+   Splitter1\output -> robotti_global\omega;
+   Splitter1\output -> robotti_global\R_t;
+   Splitter2\output -> robotti_global\delta_FL;
+   Splitter2\output -> robotti_global\delta_FR;
   end;
  implementation_end;
 ]]>
@@ -1150,6 +893,8 @@ equations
     <ModelProperty section="CCodeDialog" entry="TargetDirectory" value="c:\temp\%SUBMODEL_NAME%_tool_3"/>
   </ModelProperties>
   <Variables>
+   <Constants>
+   </Constants>
    <Parameters>
     <Variable>
      <Name>l_ext</Name>
@@ -1197,13 +942,10 @@ equations
     <VarName>robotti_global\Demux\y3</VarName>
     <VarName>robotti_global\Robotti_model\y4</VarName>
     <VarName>robotti_global\Robotti_model\u_r</VarName>
-    <VarName>DataFromFile2\Column_2</VarName>
-    <VarName>DataFromFile2\Column_3</VarName>
-    <VarName>Steering_input\output_omega</VarName>
-    <VarName>Steering_input\output_delta_FL</VarName>
-    <VarName>Steering_input\output_delta_FR</VarName>
     <VarName>robotti_global\Robotti_model\sum_Fyf</VarName>
     <VarName>robotti_global\Robotti_model\sum_Fyr</VarName>
+    <VarName>Sine\output</VarName>
+    <VarName>robotti_global\Robotti_model\FyflT</VarName>
    </VarNames>
    <Plots>
     <Plot>
@@ -1265,7 +1007,7 @@ equations
      <XAxes>
       <Axis>
        <Minimum>-0.5</Minimum>
-       <Maximum>32.6745434725048</Maximum>
+       <Maximum>15.1155017875535</Maximum>
        <Linear>true</Linear>
        <Scaling>3</Scaling>
        <Label>x [m]</Label>
@@ -1273,18 +1015,11 @@ equations
      </XAxes>
      <YAxes>
       <Axis>
-       <Minimum>-1</Minimum>
-       <Maximum>9</Maximum>
+       <Minimum>-2</Minimum>
+       <Maximum>8</Maximum>
        <Linear>true</Linear>
        <Scaling>1</Scaling>
        <Label>Simulations</Label>
-      </Axis>
-      <Axis>
-       <Minimum>-2</Minimum>
-       <Maximum>18</Maximum>
-       <Linear>true</Linear>
-       <Scaling>1</Scaling>
-       <Label>GPS</Label>
       </Axis>
      </YAxes>
      <ZAxes>
@@ -1307,25 +1042,6 @@ equations
        <YCurveData>
         <ShowUnit>true</ShowUnit>
         <VarName>robotti_global\Robotti_model\y4</VarName>
-       </YCurveData>
-      </Curve>
-      <Curve>
-       <LineColor>16711680</LineColor>
-       <LineStyle>1</LineStyle>
-       <TickColor>16711680</TickColor>
-       <TickStyle>0</TickStyle>
-       <CurveVisible>true</CurveVisible>
-       <PixelThresshold>1</PixelThresshold>
-       <LineThickness>1</LineThickness>
-       <LineOrder>1</LineOrder>
-       <ShowYValues>true</ShowYValues>
-       <XCurveData>
-        <ShowUnit>true</ShowUnit>
-        <VarName>DataFromFile2\Column_2</VarName>
-       </XCurveData>
-       <YCurveData>
-        <ShowUnit>true</ShowUnit>
-        <VarName>DataFromFile2\Column_3</VarName>
        </YCurveData>
       </Curve>
      </Curves>
@@ -1392,7 +1108,7 @@ equations
      <XAxes>
       <Axis>
        <Minimum>0</Minimum>
-       <Maximum>58.6387751662618</Maximum>
+       <Maximum>20</Maximum>
        <Linear>true</Linear>
        <Scaling>3</Scaling>
        <Label>time</Label>
@@ -1400,75 +1116,23 @@ equations
      </XAxes>
      <YAxes>
       <Axis>
-       <Minimum>-1</Minimum>
-       <Maximum>1</Maximum>
-       <Linear>true</Linear>
-       <Scaling>1</Scaling>
-       <Label>output_delta_FL</Label>
-      </Axis>
-      <Axis>
-       <Minimum>-2</Minimum>
-       <Maximum>8</Maximum>
-       <Linear>true</Linear>
-       <Scaling>1</Scaling>
-       <Label>output_delta_FR</Label>
-      </Axis>
-      <Axis>
-       <Minimum>-2</Minimum>
-       <Maximum>8</Maximum>
+       <Minimum>-0.8</Minimum>
+       <Maximum>1.2</Maximum>
        <Linear>true</Linear>
        <Scaling>1</Scaling>
        <Label>u_r</Label>
       </Axis>
       <Axis>
-       <Minimum>-2</Minimum>
-       <Maximum>8</Maximum>
+       <Minimum>0.5</Minimum>
+       <Maximum>1.5</Maximum>
        <Linear>true</Linear>
        <Scaling>1</Scaling>
-       <Label>output_omega</Label>
+       <Label>output</Label>
       </Axis>
      </YAxes>
      <ZAxes>
      </ZAxes>
      <Curves>
-      <Curve>
-       <LineColor>16711680</LineColor>
-       <LineStyle>1</LineStyle>
-       <TickColor>16711680</TickColor>
-       <TickStyle>0</TickStyle>
-       <CurveVisible>true</CurveVisible>
-       <PixelThresshold>1</PixelThresshold>
-       <LineThickness>1</LineThickness>
-       <LineOrder>1</LineOrder>
-       <ShowYValues>true</ShowYValues>
-       <XCurveData>
-        <ShowUnit>true</ShowUnit>
-        <VarName>time</VarName>
-       </XCurveData>
-       <YCurveData>
-        <ShowUnit>true</ShowUnit>
-        <VarName>Steering_input\output_delta_FL</VarName>
-       </YCurveData>
-      </Curve>
-      <Curve>
-       <LineColor>16711935</LineColor>
-       <LineStyle>1</LineStyle>
-       <TickColor>16711935</TickColor>
-       <TickStyle>0</TickStyle>
-       <CurveVisible>true</CurveVisible>
-       <PixelThresshold>1</PixelThresshold>
-       <LineThickness>1</LineThickness>
-       <LineOrder>1</LineOrder>
-       <ShowYValues>true</ShowYValues>
-       <XCurveData>
-        <ShowUnit>true</ShowUnit>
-        <VarName>time</VarName>
-       </XCurveData>
-       <YCurveData>
-        <ShowUnit>true</ShowUnit>
-        <VarName>Steering_input\output_delta_FR</VarName>
-       </YCurveData>
-      </Curve>
       <Curve>
        <LineColor>255</LineColor>
        <LineStyle>1</LineStyle>
@@ -1489,9 +1153,9 @@ equations
        </YCurveData>
       </Curve>
       <Curve>
-       <LineColor>65280</LineColor>
+       <LineColor>16711680</LineColor>
        <LineStyle>1</LineStyle>
-       <TickColor>65280</TickColor>
+       <TickColor>16711680</TickColor>
        <TickStyle>0</TickStyle>
        <CurveVisible>true</CurveVisible>
        <PixelThresshold>1</PixelThresshold>
@@ -1504,16 +1168,12 @@ equations
        </XCurveData>
        <YCurveData>
         <ShowUnit>true</ShowUnit>
-        <VarName>Steering_input\output_omega</VarName>
+        <VarName>Sine\output</VarName>
        </YCurveData>
       </Curve>
      </Curves>
      <Legenda>
       <ShowLegenda>true</ShowLegenda>
-      <Position>
-       <X>0.963265306122449</X>
-       <Y>0.213457356849481</Y>
-      </Position>
      </Legenda>
     </Plot>
     <Plot>
@@ -1574,8 +1234,8 @@ equations
      <SharedZAxis>false</SharedZAxis>
      <XAxes>
       <Axis>
-       <Minimum>-14.6596937915655</Minimum>
-       <Maximum>73.2984689578273</Maximum>
+       <Minimum>0</Minimum>
+       <Maximum>20</Maximum>
        <Linear>true</Linear>
        <Scaling>3</Scaling>
        <Label>time</Label>
@@ -1583,18 +1243,25 @@ equations
      </XAxes>
      <YAxes>
       <Axis>
-       <Minimum>-2500</Minimum>
-       <Maximum>2500</Maximum>
+       <Minimum>-1500</Minimum>
+       <Maximum>3500</Maximum>
        <Linear>true</Linear>
        <Scaling>1</Scaling>
        <Label>sum_Fyf</Label>
       </Axis>
       <Axis>
-       <Minimum>-6</Minimum>
-       <Maximum>14</Maximum>
+       <Minimum>-250</Minimum>
+       <Maximum>250</Maximum>
        <Linear>true</Linear>
        <Scaling>1</Scaling>
        <Label>sum_Fyr</Label>
+      </Axis>
+      <Axis>
+       <Minimum>-250</Minimum>
+       <Maximum>250</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>FyflT</Label>
       </Axis>
      </YAxes>
      <ZAxes>
@@ -1605,7 +1272,7 @@ equations
        <LineStyle>1</LineStyle>
        <TickColor>16711680</TickColor>
        <TickStyle>0</TickStyle>
-       <CurveVisible>true</CurveVisible>
+       <CurveVisible>false</CurveVisible>
        <PixelThresshold>1</PixelThresshold>
        <LineThickness>2</LineThickness>
        <LineOrder>1</LineOrder>
@@ -1624,7 +1291,7 @@ equations
        <LineStyle>1</LineStyle>
        <TickColor>16711935</TickColor>
        <TickStyle>0</TickStyle>
-       <CurveVisible>true</CurveVisible>
+       <CurveVisible>false</CurveVisible>
        <PixelThresshold>1</PixelThresshold>
        <LineThickness>2</LineThickness>
        <LineOrder>1</LineOrder>
@@ -1636,6 +1303,25 @@ equations
        <YCurveData>
         <ShowUnit>true</ShowUnit>
         <VarName>robotti_global\Robotti_model\sum_Fyr</VarName>
+       </YCurveData>
+      </Curve>
+      <Curve>
+       <LineColor>255</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>255</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>time</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>robotti_global\Robotti_model\FyflT</VarName>
        </YCurveData>
       </Curve>
      </Curves>
@@ -1667,7 +1353,7 @@ equations
   <RunSpecs>
    <SimulatorSettings>
     <StartTime>0</StartTime>
-    <FinishTime>60</FinishTime>
+    <FinishTime>20</FinishTime>
     <Warp>false</Warp>
     <UseOutputAfterEach>true</UseOutputAfterEach>
     <OutputAfterEach>0.1</OutputAfterEach>

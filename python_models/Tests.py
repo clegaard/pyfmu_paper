@@ -12,6 +12,7 @@ from BikeTrackingWithDynamicWithoutStateRestore import BikeTrackingWithDynamicWi
 from DriverDynamic import DriverDynamic
 from oomodelling.ModelSolver import ModelSolver
 from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulatorKinematic
+from RobottiBikeModelsWithDriver import RobottiBikeModelsWithDriver
 from RobottiDynamicModelWithDriver import RobottiDynamicModelWithDriver
 
 
@@ -224,9 +225,40 @@ class TestExperiments(unittest.TestCase):
         m = RobottiDynamicModelWithDriver()
 
         m.reset()
-        ModelSolver().simulate(m, 0.0, 10.0, 0.1)
-        _, (p1, p2) = plt.subplots(1, 2)
+        ModelSolver().simulate(m, 0.0, 60, 0.1)
+        _, (p1, p2, p3) = plt.subplots(1, 3)
 
-        p1.plot(m.signals['time'], m.ddriver.signals['steering'])
-        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
+        p1.plot(m.signals['time'], m.driver.signals['steering'])
+        p2.plot(m.rbike.signals['X'], m.rbike.signals['Y'])
+        p3.plot(m.signals['time'], m.rbike.signals['vx'])
         plt.show()
+
+    def test_plot_two_robotti_models(self):
+        m = RobottiBikeModelsWithDriver()
+        ModelSolver().simulate(m, 0.0, 10, 0.1)
+        _, (p1, p2) = plt.subplots(1, 2)
+        p1.plot(m.signals['time'], m.robot.signals['Fcf'], label='robot.Fcf')
+        p1.plot(m.signals['time'], m.dbike.signals['Fcf'], label='dbike.Fcf')
+        p1.plot(m.signals['time'], m.ddriver.signals['steering'], label='steering')
+        p1.legend()
+        p2.plot(m.robot.signals['X'], m.robot.signals['Y'], label='robotti')
+        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'], label='bike')
+        p2.legend()
+        plt.show()
+
+    def test_calibrate_dynamic_bike_model(self):
+        def cost(self, p):
+            delay, k = p
+            m = BikeModelsWithDriver()
+            m.kdriver.delay = delay
+            m.kdriver.k = k
+            ModelSolver().simulate(m, 0.0, 33, 0.1)
+            dX = np.array(m.dbike.signals['X'])
+            dY = np.array(m.dbike.signals['Y'])
+            kX = np.array(m.kbike.signals['x'])
+            kY = np.array(m.kbike.signals['y'])
+            errx = (dX - kX)
+            erry = (dY - kY)
+            ssd = np.concatenate((errx, erry))
+            return ssd
+
