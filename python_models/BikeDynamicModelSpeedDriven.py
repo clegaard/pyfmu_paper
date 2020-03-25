@@ -10,7 +10,7 @@ class BikeDynamicModelSpeedDriven(Model):
         self.lr = self.parameter(1.738)  # distance from the the center of mass to the rear (m)";
         self.m = self.parameter(1292.2)  # Vehicle's mass (kg)";
         self.Iz = self.parameter(1)  # Yaw inertial (kgm^2) (Not taken from the book)";
-        self.Caf = self.parameter(800)  # Front Tire cornering stiffness";
+        self.Caf = self.input(lambda: 800)  # Front Tire cornering stiffness";
         self.Car = self.parameter(800)  # Rear Tire cornering stiffness";
         self.x = self.state(0.0)  # longitudinal displacement in the body frame";
         self.X = self.state(0.0)  # x coordinate in the reference frame";
@@ -23,7 +23,7 @@ class BikeDynamicModelSpeedDriven(Model):
         self.deltaf = self.input(lambda: 0.0) # steering angle at the front wheel";
         self.af = self.var(lambda: self.deltaf() - (self.vy() + self.lf*self.dpsi())/self.vx())  # Front Tire slip angle";
         self.ar = self.var(lambda: (self.vy() - self.lr*self.dpsi())/self.vx())  # Rear Tire slip angle";
-        self.Fcf = self.var(lambda: self.Caf*self.af())  # lateral tire force at the front tire in the frame of the front tire";
+        self.Fcf = self.var(lambda: self.Caf()*self.af())  # lateral tire force at the front tire in the frame of the front tire";
         self.Fcr = self.var(lambda: self.Car*(-self.ar()))  # lateral tire force at the rear tire in the frame of the rear tire";
 
         self.der('x', lambda: self.vx())

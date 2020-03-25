@@ -14,6 +14,7 @@ from oomodelling.ModelSolver import ModelSolver
 from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulatorKinematic
 from RobottiBikeModelsWithDriver import RobottiBikeModelsWithDriver
 from RobottiDynamicModelWithDriver import RobottiDynamicModelWithDriver
+from RobottiTrackingSimulator import RobottiTrackingSimulator
 
 
 class TestExperiments(unittest.TestCase):
@@ -235,7 +236,7 @@ class TestExperiments(unittest.TestCase):
 
     def test_plot_two_robotti_models(self):
         m = RobottiBikeModelsWithDriver()
-        ModelSolver().simulate(m, 0.0, 10, 0.1)
+        ModelSolver().simulate(m, 0.0, 30, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
         p1.plot(m.signals['time'], m.robot.signals['Fcf'], label='robot.Fcf')
         p1.plot(m.signals['time'], m.dbike.signals['Fcf'], label='dbike.Fcf')
@@ -246,19 +247,30 @@ class TestExperiments(unittest.TestCase):
         p2.legend()
         plt.show()
 
-    def test_calibrate_dynamic_bike_model(self):
-        def cost(self, p):
-            delay, k = p
-            m = BikeModelsWithDriver()
-            m.kdriver.delay = delay
-            m.kdriver.k = k
-            ModelSolver().simulate(m, 0.0, 33, 0.1)
-            dX = np.array(m.dbike.signals['X'])
-            dY = np.array(m.dbike.signals['Y'])
-            kX = np.array(m.kbike.signals['x'])
-            kY = np.array(m.kbike.signals['y'])
-            errx = (dX - kX)
-            erry = (dY - kY)
-            ssd = np.concatenate((errx, erry))
-            return ssd
+    def test_robotti_tracking(self):
+        m = RobottiTrackingSimulator()
+        # Bump the Caf after some time
+        m.robot.Caf = lambda: 20000 if m.time() < 5.0 else 20000
+        m.tolerance = 0.01
+        m.horizon = 10.0
+        m.nsamples = 20
+        m.time_step = 0.1
+        m.conv_xatol = 30.0
+        m.conv_fatol = 1.0
 
+        ModelSolver().simulate(m, 0.0, 60, 0.1)
+        _, (p1, p2, p3, p4) = plt.subplots(1, 4)
+
+        p1.plot(m.signals['time'], m.driver.signals['steering'], label='steering')
+        p1.legend()
+        p2.plot(m.robot.signals['X'], m.robot.signals['Y'], label='dX vs dY')
+        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'], label='~dX vs ~dY')
+        for calib in m.recalibration_history:
+            p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
+        p2.legend()
+        p3.plot(m.signals['time'], m.signals['error'], label='error')
+        p3.legend()
+        # p4.plot(m.robot.signals['time'], m.robot.signals['Caf'], label='real_Caf')
+        p4.plot(m.dbike.signals['time'], m.dbike.signals['Caf'], label='approx_Caf')
+        p4.legend()
+        plt.show()

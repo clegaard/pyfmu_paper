@@ -5,6 +5,7 @@ from DriverDynamic import DriverDynamic
 from DriverKinematic import DriverKinematic
 from oomodelling.Model import Model
 
+from RobottiDriver import RobottiDriver
 from RobottiDynamicModel import RobottiDynamicModel
 
 
@@ -13,7 +14,7 @@ class RobottiBikeModelsWithDriver(Model):
     def __init__(self):
         super().__init__()
 
-        self.ddriver = DriverDynamic()
+        self.ddriver = RobottiDriver()
         self.dbike = BikeDynamicModelSpeedDriven()
         self.robot = RobottiDynamicModel()
 
@@ -23,7 +24,7 @@ class RobottiBikeModelsWithDriver(Model):
         self.dbike.Iz = self.robot.Iz
         self.dbike.vx = self.robot.vx
 
-        self.dbike.Caf = self.robot.Car
+        self.dbike.Caf = lambda: self.robot.Car
         self.dbike.Car = self.robot.Car
 
         self.dbike.deltaf = self.ddriver.steering
