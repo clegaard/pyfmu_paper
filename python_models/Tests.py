@@ -251,8 +251,8 @@ class TestExperiments(unittest.TestCase):
         m = RobottiTrackingSimulator()
         # Bump the Caf after some time
         m.robot.Caf = lambda: 20000 if m.time() < 5.0 else 20000
-        m.tolerance = 0.01
-        m.horizon = 10.0
+        m.tolerance = 0.1
+        m.horizon = 5.0
         m.nsamples = 20
         m.time_step = 0.1
         m.conv_xatol = 30.0
