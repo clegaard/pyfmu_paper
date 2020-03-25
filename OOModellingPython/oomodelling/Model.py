@@ -6,6 +6,8 @@ import numpy as np
 class Model:
     TIME = 'time'
 
+    # TODO: Add check to make sure there's no unintentional override of variables while in the constructor.
+
     def __init__(self):
         super().__init__()
         self._bypass_set_attr = True
