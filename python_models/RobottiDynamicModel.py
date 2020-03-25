@@ -10,7 +10,7 @@ class RobottiDynamicModel(Model):
         self.L = self.parameter(1.55)  # Wheel base
         self.front_to_rear_ratio = self.parameter(0.55)
         self.lr_ratio = self.parameter(0.5)
-        self.Car = self.parameter(20000)  # Rear Tire cornering stiffness";
+        self.Car = self.parameter(20000.0)  # Rear Tire cornering stiffness";
         self.mu = self.parameter(0.6)  # surface friction
         self.l_ext = self.parameter(1.5)
         self.h = self.parameter(1.0)
