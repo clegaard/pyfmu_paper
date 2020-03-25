@@ -75,7 +75,7 @@ class RobottiDynamicModel(Model):
 
         # Front left tyre non linear model
         self.useNLFRT = self.var(lambda: abs(-self.Caf()*math.tan(self.alphaFr())) - self.mu*self.Nlfr/2)
-        self.FyfrT = self.var(lambda: -self.mu*self.Nlfr*sign(self.alphaFr())*(1-(self.mu*self.Nlfr) / (4*self.Caf()*abs(math.tan(self.alphaFr)))) if self.useNLFRT() > 0 else -self.Caf()*math.tan(self.alphaFr()))
+        self.FyfrT = self.var(lambda: -self.mu*self.Nlfr*sign(self.alphaFr())*(1-(self.mu*self.Nlfr) / (4*self.Caf()*abs(math.tan(self.alphaFr())))) if self.useNLFRT() > 0 else -self.Caf()*math.tan(self.alphaFr()))
 
         # Back right tyre non linear model
         self.useNLRLT = self.var(lambda: abs(-self.Caf()*math.tan(self.alphaRl())) - self.mu*self.Nlrl/2)
