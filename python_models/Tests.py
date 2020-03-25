@@ -258,6 +258,12 @@ class TestExperiments(unittest.TestCase):
         m.conv_xatol = 30.0
         m.conv_fatol = 1.0
 
+        print(m.robot.m)
+        print(m.robot.lf)
+        print(m.robot.lr)
+        print(m.robot.Iz)
+        print(m.robot.Car)
+
         ModelSolver().simulate(m, 0.0, 60, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 

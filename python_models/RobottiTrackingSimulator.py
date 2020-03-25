@@ -26,8 +26,8 @@ class RobottiTrackingSimulator(TrackingSimulator):
         self.match_signals(self.robot.X, self.dbike.X)
         self.match_signals(self.robot.Y, self.dbike.Y)
 
-        self.X_idx = self.robot.get_state_idx('X')
-        self.Y_idx = self.robot.get_state_idx('Y')
+        self.X_idx = self.dbike.get_state_idx('X')
+        self.Y_idx = self.dbike.get_state_idx('Y')
 
         self.save()
 

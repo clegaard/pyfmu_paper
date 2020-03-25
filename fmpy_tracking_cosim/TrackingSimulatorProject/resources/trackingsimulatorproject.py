@@ -61,13 +61,24 @@ class TrackingSimulatorProject(Fmi2Slave):
                                description="",
                                define_attribute=True,
                                value_reference=None)
+        self.vx = 0.0
+        self.register_variable("vx",
+                               data_type=Fmi2DataTypes.real,
+                               causality=Fmi2Causality.input,
+                               variability=Fmi2Variability.continuous,
+                               initial=None,
+                               start=None,
+                               description="",
+                               define_attribute=True,
+                               value_reference=None)
 
         # Internal model
-        self.model = BikeTracking()
+        self.model = RobottiTrackingSimulator()
 
-        self.model.to_track_steering = lambda: self.steering
+        self.model.steering = lambda: self.steering
         self.model.to_track_X = lambda: self.X
         self.model.to_track_Y = lambda: self.Y
+        self.model.to_track_vx = lambda: self.vx
 
         # Outputs
         self.tracking_X = 0.0
@@ -124,42 +135,60 @@ class TrackingSimulatorProject(Fmi2Slave):
         pass
 
 
-class BikeTracking(TrackingSimulator):
+class RobottiTrackingSimulator(TrackingSimulator):
+
     def __init__(self):
         super().__init__()
 
-        self.tracking = BikeDynamicModel()
-
-        self.to_track_steering = self.input(lambda: 0.0)
+        self.steering = self.input(lambda: 0.0)
         self.to_track_X = self.input(lambda: 0.0)
         self.to_track_Y = self.input(lambda: 0.0)
+        self.to_track_vx = self.input(lambda: 0.0)
 
-        self.tracking.deltaf = self.to_track_steering
+        self.dbike = self.get_new_bike_model()
 
-        self.match_signals(self.to_track_X, self.tracking.X)
-        self.match_signals(self.to_track_Y, self.tracking.Y)
+        self.dbike.vx = self.to_track_vx
+        self.dbike.deltaf = self.steering
 
-        self.X_idx = self.tracking.get_state_idx('X')
-        self.Y_idx = self.tracking.get_state_idx('Y')
+        self.match_signals(self.to_track_X, self.dbike.X)
+        self.match_signals(self.to_track_Y, self.dbike.Y)
+
+        self.X_idx = self.dbike.get_state_idx('X')
+        self.Y_idx = self.dbike.get_state_idx('Y')
 
         self.save()
 
+    def get_new_bike_model(self):
+        b = BikeDynamicModelSpeedDriven()
+        b.m = 1700.0
+        b.lf = 0.8525000000000001
+        b.lr = 0.6974999999999999
+        b.Iz = 2135.7808333333332
+        b.Caf = lambda: 20000.0
+        b.Car = 20000.0
+        return b
+
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
         new_caf = new_parameters[0]
-        m = BikeDynamicModel()
+        m = self.get_new_bike_model()
+        # Set new parameter
         m.Caf = lambda: new_caf
         # Rewrite control input to mimic the past behavior.
-        m.deltaf = lambda: self.to_track_steering(-(tf - m.time()))
+        m.deltaf = lambda: self.steering(-(tf - m.time()))
+        m.vx = lambda: self.to_track_vx(-(tf - m.time()))
+
         assert np.isclose(self.to_track_X(-(tf - t0)), tracked_solutions[0][0])
         assert np.isclose(self.to_track_Y(-(tf - t0)), tracked_solutions[1][0])
-        m.x = self.tracking.x(-(tf - t0))
-        m.X = self.tracking.X(-(tf - t0))
-        m.y = self.tracking.y(-(tf - t0))
-        m.Y = self.tracking.Y(-(tf - t0))
-        m.vx = self.tracking.vx(-(tf - t0))
-        m.vy = self.tracking.vy(-(tf - t0))
-        m.psi = self.tracking.psi(-(tf - t0))
-        m.dpsi = self.tracking.dpsi(-(tf - t0))
+        # Initialize the state to the state at t0
+        # set the state that we can measure from the robot.
+        m.x = self.dbike.x(-(tf - t0))
+        m.X = self.to_track_X(-(tf - t0))
+        m.y = self.dbike.y(-(tf - t0))
+        m.Y = self.to_track_Y(-(tf - t0))
+        m.vx = self.dbike.vx(-(tf - t0))
+        m.vy = self.dbike.vy(-(tf - t0))
+        m.psi = self.dbike.psi(-(tf - t0))
+        m.dpsi = self.dbike.dpsi(-(tf - t0))
 
         sol = ModelSolver().simulate(m, t0, tf, self.time_step, error_space)
         new_trajectories = sol.y
@@ -174,16 +203,16 @@ class BikeTracking(TrackingSimulator):
         return new_trajectories
 
     def update_tracking_model(self, new_present_state, new_parameter):
-        self.tracking.record_state(new_present_state, self.time(), override=True)
-        self.tracking.Caf = lambda: new_parameter[0]
-        assert np.isclose(new_present_state[self.X_idx], self.tracking.X())
-        assert np.isclose(new_present_state[self.Y_idx], self.tracking.Y())
+        self.dbike.record_state(new_present_state, self.time(), override=True)
+        self.dbike.Caf = lambda: new_parameter[0]
+        assert np.isclose(new_present_state[self.X_idx], self.dbike.X())
+        assert np.isclose(new_present_state[self.Y_idx], self.dbike.Y())
 
     def get_parameter_guess(self):
-        return np.array([self.tracking.Caf()])
+        return np.array([self.dbike.Caf()])
 
 
-class BikeDynamicModel(Model):
+class BikeDynamicModelSpeedDriven(Model):
     def __init__(self):
         super().__init__()
         self.lf = self.parameter(1.105)  # distance from the the center of mass to the front (m)";
@@ -195,14 +224,13 @@ class BikeDynamicModel(Model):
         self.x = self.state(0.0)  # longitudinal displacement in the body frame";
         self.X = self.state(0.0)  # x coordinate in the reference frame";
         self.Y = self.state(0.0)  # x coordinate in the reference frame";
-        self.vx = self.state(1.0)  # velocity along x";
         self.y = self.state(0.0)  # lateral displacement in the body frame";
         self.vy = self.state(0.0)  # velocity along y";
         self.psi = self.state(0.0)  # Yaw";
         self.dpsi = self.state(0.0)  # Yaw rate";
-        self.a = self.input(lambda: 0.0)  # longitudinal acceleration";
+        self.vx = self.input(lambda: 1.0)  # velocity along x;
         self.deltaf = self.input(lambda: 0.0) # steering angle at the front wheel";
-        self.af = self.var(lambda: self.deltaf() - ( self.vy() + self.lf*self.dpsi())/self.vx())  # Front Tire slip angle";
+        self.af = self.var(lambda: self.deltaf() - (self.vy() + self.lf*self.dpsi())/self.vx())  # Front Tire slip angle";
         self.ar = self.var(lambda: (self.vy() - self.lr*self.dpsi())/self.vx())  # Rear Tire slip angle";
         self.Fcf = self.var(lambda: self.Caf()*self.af())  # lateral tire force at the front tire in the frame of the front tire";
         self.Fcr = self.var(lambda: self.Car*(-self.ar()))  # lateral tire force at the rear tire in the frame of the rear tire";
@@ -210,7 +238,6 @@ class BikeDynamicModel(Model):
         self.der('x', lambda: self.vx())
         self.der('y', lambda: self.vy())
         self.der('psi', lambda: self.dpsi())
-        self.der('vx', lambda: self.dpsi()*self.vy() + self.a())
         self.der('vy', lambda: -self.dpsi()*self.vx() + (1/self.m)*(self.Fcf() * math.cos(self.deltaf()) + self.Fcr()))
         self.der('dpsi', lambda: (2/self.Iz)*(self.lf*self.Fcf() - self.lr*self.Fcr()))
         self.der('X', lambda: self.vx()*math.cos(self.psi()) - self.vy()*math.sin(self.psi()))

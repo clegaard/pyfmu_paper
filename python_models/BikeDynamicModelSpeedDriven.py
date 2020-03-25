@@ -2,6 +2,7 @@ import math
 
 from oomodelling.Model import Model
 
+
 # TODO: We should be able to use class hierarchy to better implement this model by reusing the BikeDynamicModel.
 class BikeDynamicModelSpeedDriven(Model):
     def __init__(self):

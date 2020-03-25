@@ -13,6 +13,3 @@ Function Create-FMU{
 Create-FMU TrackingSimulator
 Remove-Item TrackingSimulator -Recurse
 
-Create-FMU robotti_global
-
-Create-FMU Steering_input

@@ -21,21 +21,24 @@ class MyTestCase(unittest.TestCase):
 
         tracking = FMULoader.load("TrackingSimulator.fmu", "tracking", logger)
         tracking.fmu.instantiate(loggingOn=True)
+
+        # TODO Define the steering input and robotti as virtual FMUs and run the cosim.
+
         # print(tracking.vars)
-        self.assertTrue('steering' in tracking.vars)
-        FMULoader.unload(tracking)
-
-        robotti = FMULoader.load("robotti_global.fmu", "robotti", logger)
-        robotti.fmu.instantiate(loggingOn=True)
-        # print(robotti.vars)
-        self.assertTrue('Demux.y1' in robotti.vars)
-        FMULoader.unload(robotti)
-
-        steering = FMULoader.load("Steering_input.fmu", "steering", logger)
-        steering.fmu.instantiate(loggingOn=True)
-        # print(steering.vars)
-        self.assertTrue('output_v' in steering.vars)
-        FMULoader.unload(steering)
+        # self.assertTrue('steering' in tracking.vars)
+        # FMULoader.unload(tracking)
+        #
+        # robotti = FMULoader.load("robotti_global.fmu", "robotti", logger)
+        # robotti.fmu.instantiate(loggingOn=True)
+        # # print(robotti.vars)
+        # self.assertTrue('Demux.y1' in robotti.vars)
+        # FMULoader.unload(robotti)
+        #
+        # steering = FMULoader.load("Steering_input.fmu", "steering", logger)
+        # steering.fmu.instantiate(loggingOn=True)
+        # # print(steering.vars)
+        # self.assertTrue('output_v' in steering.vars)
+        # FMULoader.unload(steering)
 
     def test_run_driver(self):
         def logger(msg):
