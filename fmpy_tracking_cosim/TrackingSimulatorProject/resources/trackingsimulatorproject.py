@@ -102,7 +102,6 @@ class TrackingSimulatorProject(Fmi2Slave):
                                define_attribute=True,
                                value_reference=None)
 
-        self.solver = None
         self.start_time = 0.0
 
     def setup_experiment(self, start_time: float):
@@ -120,11 +119,12 @@ class TrackingSimulatorProject(Fmi2Slave):
     def do_step(self, current_time: float, step_size: float, no_set_fmu_state_prior: bool) -> bool:
         f = self.model.derivatives()
         x = self.model.state_vector()
-        sol = solve_ivp(f, (current_time, current_time+step_size), x, method=StepRK45, max_step=step_size, model=self.model, t_eval=None)
+        sol = solve_ivp(f, (current_time, current_time+step_size), x, method=StepRK45, max_step=step_size, model=self.model, t_eval=[current_time+step_size])
         assert sol.success
+        assert np.isclose(self.driver.time(), current_time + step_size)
 
-        self.tracking_X = self.model.tracking.X
-        self.tracking_Y = self.model.tracking.Y
+        self.tracking_X = self.model.dbike.X()
+        self.tracking_Y = self.model.dbike.Y()
 
         return True
 

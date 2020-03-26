@@ -8,6 +8,7 @@ from fmpy import *
 from cosimlibrary.loader import FMULoader
 
 from virtual_driver import VirtualDriver
+from virtual_robotti import VirtualRobotti
 
 
 class MyTestCase(unittest.TestCase):
@@ -45,45 +46,34 @@ class MyTestCase(unittest.TestCase):
             # print(msg)
             pass
 
-        steering = FMULoader.load("Steering_input.fmu", "steering", logger)
+        driver = VirtualDriver('driver')
         steering_out = OutputConnection(value_type=VarType.REAL,
                                     signal_type=SignalType.CONTINUOUS,
-                                    source_fmu=steering.fmu,
+                                    source_fmu=driver,
                                     source_vr=[
-                                        steering.vars['output_v'].valueReference,
-                                        steering.vars['output_R_t'].valueReference,
-                                        steering.vars['output_delta_FL'].valueReference,
-                                        steering.vars['output_delta_FR'].valueReference,
-                                        steering.vars['output_deltaR'].valueReference,
-                                        steering.vars['output_omega'].valueReference
+                                        driver.steering
                                     ])
         output_connections = [steering_out]
 
         real_parameters = {}
 
         scenario = CosimScenario(
-            fmus=[steering.fmu],
-            connections=output_connections,
+            fmus=[driver],
+            connections=[],
             step_size=0.01,
             print_interval=0.1,
             stop_time=60.0,
             outputs=output_connections,
             real_parameters=real_parameters)
 
-        steering.fmu.instantiate(loggingOn=False)
+        driver.instantiate(loggingOn=False)
         jacobi = JacobiRunner()
         results = jacobi.run_cosim(scenario, lambda t: print(t))
-        steering.fmu.terminate()
-        FMULoader.unload(steering)
+        driver.terminate()
 
         plt.figure(1)
         plt.xlabel("time")
-        plt.plot(results.timestamps, results.signals[steering.fmu.instanceName][steering.vars['output_v'].valueReference], label="output_v")
-        # plt.plot(results.timestamps, results.signals[steering.fmu.instanceName][steering.vars['output_R_t'].valueReference], label="output_R_t")
-        plt.plot(results.timestamps, results.signals[steering.fmu.instanceName][steering.vars['output_delta_FL'].valueReference], label="output_delta_FL")
-        plt.plot(results.timestamps, results.signals[steering.fmu.instanceName][steering.vars['output_delta_FR'].valueReference], label="output_delta_FR")
-        plt.plot(results.timestamps, results.signals[steering.fmu.instanceName][steering.vars['output_deltaR'].valueReference], label="output_deltaR")
-        plt.plot(results.timestamps, results.signals[steering.fmu.instanceName][steering.vars['output_omega'].valueReference], label="output_omega")
+        plt.plot(results.timestamps, results.signals[driver.instanceName][driver.steering], label="output_v")
         plt.legend()
 
         plt.show()
@@ -94,37 +84,31 @@ class MyTestCase(unittest.TestCase):
             pass
 
         steering = VirtualDriver('steering')
-        robotti = FMULoader.load("robotti_global.fmu", "robotti", logger)
+        robotti = VirtualRobotti('robot')
 
         steering_robotti = Connection(value_type=VarType.REAL,
                               signal_type=SignalType.CONTINUOUS,
                               source_fmu=steering,
-                              target_fmu=robotti.fmu,
-                              source_vr=[steering.v],
-                              target_vr=[robotti.vars['F_x_in'].valueReference])
+                              target_fmu=robotti,
+                              source_vr=[steering.steering],
+                              target_vr=[robotti.steering])
 
-        steering_out = OutputConnection(value_type=VarType.REAL,
-                                    signal_type=SignalType.CONTINUOUS,
-                                    source_fmu=steering,
-                                    source_vr=[
-                                        steering.v,
-                                    ])
         robotti_out = OutputConnection(value_type=VarType.REAL,
                                         signal_type=SignalType.CONTINUOUS,
-                                        source_fmu=robotti.fmu,
+                                        source_fmu=robotti,
                                         source_vr=[
-                                            robotti.vars['y3_out'].valueReference,
-                                            robotti.vars['y4_out'].valueReference,
-                                            robotti.vars['y5_out'].valueReference,
+                                            robotti.X,
+                                            robotti.Y,
+                                            robotti.vx,
                                         ])
 
         connections = [steering_robotti]
-        output_connections = [steering_out, robotti_out]
+        output_connections = [steering_robotti, robotti_out]
 
         real_parameters = {}
 
         scenario = CosimScenario(
-            fmus=[steering],
+            fmus=[steering, robotti],
             connections=connections,
             step_size=0.01,
             print_interval=0.1,
@@ -133,20 +117,18 @@ class MyTestCase(unittest.TestCase):
             real_parameters=real_parameters)
 
         steering.instantiate(loggingOn=False)
-        robotti.fmu.instantiate(loggingOn=False)
+        robotti.instantiate(loggingOn=False)
 
         jacobi = JacobiRunner()
         results = jacobi.run_cosim(scenario, lambda t: print(t))
         steering.terminate()
 
-        plt.figure(1)
-        plt.xlabel("time")
-        plt.plot(results.timestamps, results.signals[steering.instanceName][steering.v], label="output_v")
-        plt.plot(results.timestamps, results.signals[robotti.fmu.instanceName][robotti.vars['y3_out'].valueReference], label="y3_out")
-        plt.plot(results.timestamps, results.signals[robotti.fmu.instanceName][robotti.vars['y4_out'].valueReference], label="y4_out")
-        plt.plot(results.timestamps, results.signals[robotti.fmu.instanceName][robotti.vars['y5_out'].valueReference], label="y5_out")
-        plt.legend()
+        _, (p1, p2) = plt.subplots(1, 2)
 
+        p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="steering")
+        p1.legend()
+        p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], label='X vs Y')
+        p2.legend()
         plt.show()
 
 
