@@ -25,7 +25,7 @@ class StepRK45(RK45):
     def __init__(self, fun, t0, y0, t_bound, max_step=np.inf,
                  rtol=1e-3, atol=1e-6, vectorized=False,
                  first_step=None, **extraneous):
-        assert max_step<np.inf
+        assert max_step<np.inf, "Max step is infinity."
         self._model: Model = extraneous.pop('model')
         self._last_committed_t = t0
         super().__init__(fun, t0, y0, t_bound, max_step=max_step,
@@ -34,7 +34,7 @@ class StepRK45(RK45):
 
     def step(self):
         msg = super().step()
-        assert msg is None
+        assert msg is None, msg
         step_taken = self.t - self._last_committed_t
         if step_taken >= self.max_step:  # Improves performance by not recording every sample.
             self._model.record_state(self.y, self.t)

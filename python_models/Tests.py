@@ -163,17 +163,19 @@ class TestExperiments(unittest.TestCase):
     def test_tracking_dynamic(self):
         m = BikeTrackingSimulatorDynamic()
         # Bump the Caf after some time
-        m.to_track.dbike.Caf = lambda: 800 if m.time() < 7.0 else 100
-        m.tolerance = 10
+        # m.to_track.dbike.Caf = lambda: 800 if m.time() < 7.0 else 100
+        m.to_track.dbike.Caf = lambda: 500
+        m.tolerance = 0.02
         m.horizon = 5.0
-        m.nsamples = 20
+        m.cooldown = 5.0
+        m.nsamples = 10
         m.time_step = 0.1
         m.conv_xatol = 30.0
         m.conv_fatol = 1.0
 
         m.to_track.ddriver.nperiods = 1
 
-        ModelSolver().simulate(m, 0.0, 20, 0.1)
+        ModelSolver().simulate(m, 0.0, 10, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
@@ -184,6 +186,7 @@ class TestExperiments(unittest.TestCase):
             p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
         p2.legend()
         p3.plot(m.signals['time'], m.signals['error'], label='error')
+        p3.plot(m.signals['time'], [m.tolerance for t in m.signals['time']], label='tolerance')
         p3.legend()
         p4.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['Caf'], label='real_Caf')
         p4.plot(m.tracking.signals['time'], m.tracking.signals['Caf'], label='approx_Caf')
@@ -194,17 +197,19 @@ class TestExperiments(unittest.TestCase):
     def test_tracking_dynamic_without_state_restore(self):
         m = BikeTrackingWithDynamicWithoutStateRestore()
         # Bump the Caf after some time
-        m.to_track.dbike.Caf = lambda: 800 if m.time() < 7.0 else 100
-        m.tolerance = 10
+        # m.to_track.dbike.Caf = lambda: 800 if m.time() < 1.0 else 100
+        m.to_track.dbike.Caf = lambda: 500
+        m.tolerance = 0.02
         m.horizon = 5.0
-        m.nsamples = 20
+        m.cooldown = 5.0
+        m.nsamples = 10
         m.time_step = 0.1
         m.conv_xatol = 30.0
         m.conv_fatol = 1.0
 
         m.to_track.ddriver.nperiods = 1
 
-        ModelSolver().simulate(m, 0.0, 20, 0.1)
+        ModelSolver().simulate(m, 0.0, 10, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
@@ -215,6 +220,7 @@ class TestExperiments(unittest.TestCase):
             p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
         p2.legend()
         p3.plot(m.signals['time'], m.signals['error'], label='error')
+        p3.plot(m.signals['time'], [m.tolerance for t in m.signals['time']], label='tolerance')
         p3.legend()
         p4.plot(m.to_track.dbike.signals['time'], m.to_track.dbike.signals['Caf'], label='real_Caf')
         p4.plot(m.tracking.signals['time'], m.tracking.signals['Caf'], label='approx_Caf')
@@ -253,6 +259,8 @@ class TestExperiments(unittest.TestCase):
         m.robot.Caf = lambda: 20000 if m.time() < 5.0 else 20000
         m.tolerance = 0.1
         m.horizon = 5.0
+        m.max_iterations = 10
+        m.cooldown = 5.0
         m.nsamples = 20
         m.time_step = 0.1
         m.conv_xatol = 30.0
@@ -264,7 +272,7 @@ class TestExperiments(unittest.TestCase):
         print(m.robot.Iz)
         print(m.robot.Car)
 
-        ModelSolver().simulate(m, 0.0, 60, 0.1)
+        ModelSolver().simulate(m, 0.0, 30, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.driver.signals['steering'], label='steering')
@@ -275,6 +283,7 @@ class TestExperiments(unittest.TestCase):
             p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
         p2.legend()
         p3.plot(m.signals['time'], m.signals['error'], label='error')
+        p3.plot(m.signals['time'], [m.tolerance for t in m.signals['time']], label='tolerance')
         p3.legend()
         # p4.plot(m.robot.signals['time'], m.robot.signals['Caf'], label='real_Caf')
         p4.plot(m.dbike.signals['time'], m.dbike.signals['Caf'], label='approx_Caf')

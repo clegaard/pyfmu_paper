@@ -13,6 +13,7 @@ class TrackingSimulatorTests(unittest.TestCase):
         m = MSDTrackingSimulator()
         m.tolerance = 1
         m.horizon = 5.0
+        m.cooldown = 5.0
         m.nsamples = 20
         m.time_step = 0.1
         m.conv_xatol = 0.1

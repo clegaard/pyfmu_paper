@@ -2,14 +2,16 @@ import math
 
 from cosimlibrary.virtual_fmus import VirtualFMU
 from fmpy.fmi2 import fmi2True, fmi2OK
+from oomodelling.Model import Model
 
 
 # TODO This can be generalized: produce a factory that takes a Model and produces a VirtualFMU of that model.
 # For now, due to time constraints, we duplicate the code.
-from oomodelling.Model import Model
 from oomodelling.ModelSolver import StepRK45
 from scipy.integrate import solve_ivp
 import numpy as np
+
+from trackingsimulatorproject import RobottiTrackingSimulator
 
 
 class VirtualDriver(VirtualFMU):
@@ -17,9 +19,38 @@ class VirtualDriver(VirtualFMU):
         ref = 0
         self.steering = ref
         ref += 1
+        self.X = ref
+        ref += 1
+        self.Y = ref
+        ref += 1
+        self.vx = ref
+        ref += 1
 
-        self.driver = RobottiDriver()
-        self.start_time = 0.0
+        # Internal model
+        self.model = RobottiTrackingSimulator()
+
+        self.model.dbike.deltaf = lambda: self.steering
+        self.model.steering = lambda: self.steering
+        self.model.to_track_X = lambda: self.X
+        self.model.to_track_Y = lambda: self.Y
+        self.model.to_track_vx = lambda: self.vx
+        self.model.dbike.vx = lambda: self.vx
+
+        self.model.tolerance = 0.1
+        self.model.horizon = 5.0
+        self.model.max_iterations = 10
+        self.model.cooldown = 5.0
+        self.model.nsamples = 20
+        self.model.time_step = 0.1
+        self.model.conv_xatol = 30.0
+        self.model.conv_fatol = 1.0
+
+        self.tracking_X = ref
+        ref += 1
+        self.tracking_Y = ref
+        ref += 1
+
+
 
         super().__init__(instanceName, ref)
 
@@ -50,11 +81,3 @@ class VirtualDriver(VirtualFMU):
         self.state[self.steering] = self.driver.steering()
 
         return fmi2OK
-
-
-class RobottiDriver(Model):
-
-    def __init__(self):
-        super().__init__()
-        self.steering = self.var(lambda: 0.5*math.sin((math.pi/10.0)*self.time()))
-        self.save()

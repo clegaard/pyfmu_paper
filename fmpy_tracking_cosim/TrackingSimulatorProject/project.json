@@ -1,1 +1,2 @@
-{"main_class": "TrackingSimulatorProject", "main_script": "trackingsimulatorproject.py"}
+{"main_class": "TrackingSimulatorProject", "main_script": "trackingsimulatorproject.py",
+  "logging": { "override_log_categories": ["logAll"] }}

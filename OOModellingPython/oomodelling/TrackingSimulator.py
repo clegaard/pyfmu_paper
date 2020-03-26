@@ -15,6 +15,8 @@ class TrackingSimulator(Model):
         self.conv_xatol = self.parameter(0.01)
         self.conv_fatol = self.parameter(1.0)
         self.horizon = self.parameter(1.0)
+        self.max_iterations = self.parameter(100)
+        self.cooldown = self.parameter(1.0)
         self.nsamples = self.parameter(10)
         self.time_step = self.parameter(0.1)
         self.error = self.var(self.get_error)
@@ -107,9 +109,10 @@ class TrackingSimulator(Model):
             return error
 
         new_sol = minimize(cost, self.get_parameter_guess(), method='Nelder-Mead',
-                 options={'xatol': self.conv_xatol, 'fatol': self.conv_fatol})
+                 options={'xatol': self.conv_xatol, 'fatol': self.conv_fatol, 'maxiter': self.max_iterations})
 
         assert new_sol.success, new_sol.message
+        # assert new_sol.fun < self.tolerance # Causes too many assertion errors.
 
         new_state_trajectories = self.run_whatif_simulation(new_sol.x, t0, tf, tracked_solutions, error_space, False)
         self.recalibration_history.append(CalibrationInfo(new_sol.x, error_space, new_state_trajectories))
@@ -120,7 +123,7 @@ class TrackingSimulator(Model):
         return True
 
     def should_recalibrate(self):
-        return (self.time() - self.last_calibration_time > self.horizon) and self.error() > self.tolerance
+        return (self.time() - self.last_calibration_time > self.cooldown) and self.error() > self.tolerance
 
     def discrete_step(self):
         """

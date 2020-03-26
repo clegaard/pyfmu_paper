@@ -7,6 +7,7 @@ from scipy.integrate import solve_ivp
 from oomodelling.ModelSolver import ModelSolver
 from oomodelling.TrackingSimulator import TrackingSimulator
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class TrackingSimulatorProject(Fmi2Slave):
@@ -47,7 +48,7 @@ class TrackingSimulatorProject(Fmi2Slave):
                                causality=Fmi2Causality.input,
                                variability=Fmi2Variability.continuous,
                                initial=None,
-                               start=None,
+                               start=0.0,
                                description="",
                                define_attribute=True,
                                value_reference=None)
@@ -57,17 +58,17 @@ class TrackingSimulatorProject(Fmi2Slave):
                                causality=Fmi2Causality.input,
                                variability=Fmi2Variability.continuous,
                                initial=None,
-                               start=None,
+                               start=0.0,
                                description="",
                                define_attribute=True,
                                value_reference=None)
-        self.vx = 0.0
+        self.vx = 1.0
         self.register_variable("vx",
                                data_type=Fmi2DataTypes.real,
                                causality=Fmi2Causality.input,
                                variability=Fmi2Variability.continuous,
                                initial=None,
-                               start=None,
+                               start=1.0,
                                description="",
                                define_attribute=True,
                                value_reference=None)
@@ -75,10 +76,21 @@ class TrackingSimulatorProject(Fmi2Slave):
         # Internal model
         self.model = RobottiTrackingSimulator()
 
+        self.model.dbike.deltaf = lambda: self.steering
         self.model.steering = lambda: self.steering
         self.model.to_track_X = lambda: self.X
         self.model.to_track_Y = lambda: self.Y
         self.model.to_track_vx = lambda: self.vx
+        self.model.dbike.vx = lambda: self.vx
+
+        self.model.tolerance = 0.1
+        self.model.horizon = 5.0
+        self.model.max_iterations = 10
+        self.model.cooldown = 5.0
+        self.model.nsamples = 20
+        self.model.time_step = 0.1
+        self.model.conv_xatol = 30.0
+        self.model.conv_fatol = 1.0
 
         # Outputs
         self.tracking_X = 0.0
@@ -104,7 +116,10 @@ class TrackingSimulatorProject(Fmi2Slave):
 
         self.start_time = 0.0
 
-    def setup_experiment(self, start_time: float):
+    def setup_experiment(self,
+                         start_time: float,
+                         tolerance: float = None,
+                         stop_time: float = None):
         self.start_time = start_time
         self.model.set_time(start_time)
 
@@ -117,19 +132,25 @@ class TrackingSimulatorProject(Fmi2Slave):
         self.model.record_state(x, self.start_time)
 
     def do_step(self, current_time: float, step_size: float, no_set_fmu_state_prior: bool) -> bool:
-        f = self.model.derivatives()
-        x = self.model.state_vector()
-        sol = solve_ivp(f, (current_time, current_time+step_size), x, method=StepRK45, max_step=step_size, model=self.model, t_eval=[current_time+step_size])
-        assert sol.success
-        assert np.isclose(self.driver.time(), current_time + step_size)
+        try:
+            f = self.model.derivatives()
+            x = self.model.state_vector()
+            assert np.isclose(self.model.time(), current_time), "np.isclose(self.model.time(), current_time)"
+            assert np.isclose(self.model.dbike.time(), current_time), "np.isclose(self.model.dbike.time(), current_time)"
+            sol = solve_ivp(f, (current_time, current_time+step_size), x, method=StepRK45, max_step=step_size, model=self.model, t_eval=[current_time+step_size])
+            assert sol.success
+            assert np.isclose(self.model.time(), current_time + step_size), "np.isclose(self.model.time(), current_time + step_size)"
+            assert np.isclose(self.model.dbike.time(), current_time + step_size), "np.isclose(self.model.dbike.time(), current_time + step_size)"
 
-        self.tracking_X = self.model.dbike.X()
-        self.tracking_Y = self.model.dbike.Y()
+            self.tracking_X = self.model.dbike.X()
+            self.tracking_Y = self.model.dbike.Y()
+        except Exception as e:
+            raise e
 
         return True
 
     def reset(self):
-        NotImplemented
+        raise NotImplementedError()
 
     def terminate(self):
         pass
@@ -143,12 +164,9 @@ class RobottiTrackingSimulator(TrackingSimulator):
         self.steering = self.input(lambda: 0.0)
         self.to_track_X = self.input(lambda: 0.0)
         self.to_track_Y = self.input(lambda: 0.0)
-        self.to_track_vx = self.input(lambda: 0.0)
+        self.to_track_vx = self.input(lambda: 1.0)
 
         self.dbike = self.get_new_bike_model()
-
-        self.dbike.vx = self.to_track_vx
-        self.dbike.deltaf = self.steering
 
         self.match_signals(self.to_track_X, self.dbike.X)
         self.match_signals(self.to_track_Y, self.dbike.Y)
@@ -170,6 +188,7 @@ class RobottiTrackingSimulator(TrackingSimulator):
 
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
         new_caf = new_parameters[0]
+        assert new_caf > 0.0
         m = self.get_new_bike_model()
         # Set new parameter
         m.Caf = lambda: new_caf
@@ -180,7 +199,6 @@ class RobottiTrackingSimulator(TrackingSimulator):
         assert np.isclose(self.to_track_X(-(tf - t0)), tracked_solutions[0][0])
         assert np.isclose(self.to_track_Y(-(tf - t0)), tracked_solutions[1][0])
         # Initialize the state to the state at t0
-        # set the state that we can measure from the robot.
         m.x = self.dbike.x(-(tf - t0))
         m.X = self.to_track_X(-(tf - t0))
         m.y = self.dbike.y(-(tf - t0))
@@ -199,6 +217,16 @@ class RobottiTrackingSimulator(TrackingSimulator):
             ])
             assert len(new_trajectories) == 2
             assert len(new_trajectories[0, :]) == len(sol.y[0, :])
+
+        # _, (p1, p2, p3) = plt.subplots(1, 3)
+        #
+        # p1.plot(m.signals['time'], m.signals['deltaf'], label='steering')
+        # p1.legend()
+        # p2.plot(m.signals['X'], m.signals['Y'], label='~dX vs ~dY')
+        # p2.legend()
+        # p3.plot(m.signals['time'], m.signals['Caf'], label='approx_Caf')
+        # p3.legend()
+        # plt.show()
 
         return new_trajectories
 
@@ -230,7 +258,7 @@ class BikeDynamicModelSpeedDriven(Model):
         self.dpsi = self.state(0.0)  # Yaw rate";
         self.vx = self.input(lambda: 1.0)  # velocity along x;
         self.deltaf = self.input(lambda: 0.0) # steering angle at the front wheel";
-        self.af = self.var(lambda: self.deltaf() - (self.vy() + self.lf*self.dpsi())/self.vx())  # Front Tire slip angle";
+        self.af = self.var(self.get_af)  # Front Tire slip angle";
         self.ar = self.var(lambda: (self.vy() - self.lr*self.dpsi())/self.vx())  # Rear Tire slip angle";
         self.Fcf = self.var(lambda: self.Caf()*self.af())  # lateral tire force at the front tire in the frame of the front tire";
         self.Fcr = self.var(lambda: self.Car*(-self.ar()))  # lateral tire force at the rear tire in the frame of the rear tire";
@@ -245,6 +273,12 @@ class BikeDynamicModelSpeedDriven(Model):
 
         self.save()
 
+    def get_af(self):
+        vx = self.vx()
+        delta_f = self.deltaf()
+        time = self.time()
+        res = delta_f - (self.vy() + self.lf*self.dpsi())/vx
+        return res
 
 if __name__ == '__main__':
     slave = TrackingSimulatorProject()

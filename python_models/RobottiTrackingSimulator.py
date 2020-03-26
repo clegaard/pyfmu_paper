@@ -53,7 +53,6 @@ class RobottiTrackingSimulator(TrackingSimulator):
         assert np.isclose(self.robot.X(-(tf - t0)), tracked_solutions[0][0])
         assert np.isclose(self.robot.Y(-(tf - t0)), tracked_solutions[1][0])
         # Initialize the state to the state at t0
-        # set the state that we can measure from the robot.
         m.x = self.dbike.x(-(tf - t0))
         m.X = self.robot.X(-(tf - t0))
         m.y = self.dbike.y(-(tf - t0))
