@@ -86,7 +86,6 @@ class MyTestCase(unittest.TestCase):
 
         steering = VirtualDriver('steering')
         robotti = VirtualRobotti('robot')
-        tracking = FMULoader.load("TrackingSimulator.fmu", "tracking", logger)
 
         steering_robotti = Connection(value_type=VarType.REAL,
                               signal_type=SignalType.CONTINUOUS,
@@ -102,6 +101,7 @@ class MyTestCase(unittest.TestCase):
                                             robotti.X,
                                             robotti.Y,
                                             robotti.vx,
+                                            robotti.steering,
                                         ])
 
         connections = [steering_robotti]
@@ -109,18 +109,19 @@ class MyTestCase(unittest.TestCase):
 
         real_parameters = {}
 
+        stop_time = 60.0
+
         scenario = CosimScenario(
             fmus=[steering, robotti],
             connections=connections,
             step_size=0.01,
             print_interval=0.1,
-            stop_time=60.0,
+            stop_time=stop_time,
             outputs=output_connections,
             real_parameters=real_parameters)
 
         steering.instantiate(loggingOn=False)
         robotti.instantiate(loggingOn=False)
-        tracking.fmu.instantiate(loggingOn=False)
 
         jacobi = JacobiRunner()
         results = jacobi.run_cosim(scenario, lambda t: print(t))
@@ -128,7 +129,10 @@ class MyTestCase(unittest.TestCase):
 
         _, (p1, p2) = plt.subplots(1, 2)
 
-        p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="steering")
+        p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="dsteering")
+        p1.plot(results.timestamps, results.signals[robotti.instanceName][robotti.steering], label="rsteering")
+        p1.plot(results.timestamps, [robotti.model.deltaFl(-(stop_time-t)) for t in results.timestamps], label="delayed_track_steering_left")
+        p1.plot(results.timestamps, [robotti.model.deltaFr(-(stop_time-t)) for t in results.timestamps], label="delayed_track_steering_right")
         p1.legend()
         p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], label='X vs Y')
         p2.legend()
@@ -240,7 +244,8 @@ class MyTestCase(unittest.TestCase):
                                        source_fmu=tracking,
                                        source_vr=[
                                            tracking.tracking_X,
-                                           tracking.tracking_Y
+                                           tracking.tracking_Y,
+                                           tracking.steering
                                        ])
 
         connections = [steering_robotti, steering_tracking, robotti_tracking]
@@ -248,13 +253,13 @@ class MyTestCase(unittest.TestCase):
         fmus = [steering, robotti, tracking]
 
         real_parameters = {}
-
+        stop_time = 15.0
         scenario = CosimScenario(
             fmus=fmus,
             connections=connections,
             step_size=0.01,
-            print_interval=0.01,
-            stop_time=30.0,
+            print_interval=0.1,
+            stop_time=stop_time,
             outputs=output_connections,
             real_parameters=real_parameters)
 
@@ -271,6 +276,8 @@ class MyTestCase(unittest.TestCase):
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="steering")
+        p1.plot(results.timestamps, results.signals[tracking.instanceName][tracking.steering], label="track_steering")
+        p1.plot(results.timestamps, [tracking.model.steering(-(stop_time-t)) for t in results.timestamps], label="delayed_track_steering")
         p1.legend()
         p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], 'o', label='X vs Y')
         p2.plot(results.signals[tracking.instanceName][tracking.tracking_X], results.signals[tracking.instanceName][tracking.tracking_Y], 'o', label='~X vs ~Y')

@@ -216,8 +216,8 @@ class RobottiTrackingSimulator(TrackingSimulator):
             assert len(new_trajectories[0, :]) == len(sol.y[0, :])
 
         # _, (p1, p2, p3) = plt.subplots(1, 3)
-        #
         # p1.plot(m.signals['time'], m.signals['deltaf'], label='steering')
+        # p1.plot(m.signals['time'], [self.steering(-(tf - t)) for t in m.signals['time']], label='steering')
         # p1.legend()
         # p2.plot(m.signals['X'], m.signals['Y'], label='~dX vs ~dY')
         # p2.legend()

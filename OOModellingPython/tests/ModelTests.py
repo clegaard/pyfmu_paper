@@ -2,6 +2,7 @@ import cProfile
 import unittest
 from pstats import SortKey
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 from oomodelling.examples.ExampleModels import MassDamper, MassSpringDamper, MassSpringDamperFlat, MSDTimeDep, \
@@ -48,6 +49,21 @@ class ModelTests(unittest.TestCase):
         self.assertTrue('x' in m.signals)
         self.assertTrue('der_x' in m.signals)
         self.assertTrue('spring' in m.signals)
+
+    def test_record_states_MSD(self):
+        m = MassSpringDamperFlat()
+        sample_space = np.linspace(0.0, 10.0, 100)
+        ModelSolver().simulate(m, 0.0, 10.0, 0.1, sample_space)
+        delayed_signals = [m.x(-(10.0-t)) for t in sample_space]
+        # plt.plot(m.signals['time'], m.signals['x'])
+        # plt.plot(sample_space, delayed_signals)
+        # plt.show()
+
+        for (d, s) in zip(delayed_signals, m.signals['x']):
+            assert np.isclose(d, s, atol=0.2, rtol=1e-10), (d,s)
+
+
+
 
     def test_model_with_autonomous(self):
         m = MassSpringDamperFlat()

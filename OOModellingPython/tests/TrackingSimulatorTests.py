@@ -38,4 +38,4 @@ class TrackingSimulatorTests(unittest.TestCase):
         # print(m.tracking.signals['d'][-1])
 
         self.assertEqual(len(m.recalibration_history), 3)
-        self.assertAlmostEqual(m.tracking.signals['d'][-1], 19.108687500000034)
+        self.assertAlmostEqual(m.tracking.signals['d'][-1], 13.943999999999974)

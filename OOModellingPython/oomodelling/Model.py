@@ -221,6 +221,15 @@ class Model:
         Stores a new snapshot in the state history.
         :returns True if the model has a new continuous state (e.g., due to handling events).
         """
+        if len(self.signals[self.TIME]):
+            last_commit_time = self.get_last_commit_time()
+            if override:
+                if len(self.signals[self.TIME]) >= 2:
+                    second_to_last_commit_time = self.signals[self.TIME][-2]
+                    assert t >= second_to_last_commit_time, "Trying to override the past."
+            else:
+                assert t >= last_commit_time, "Trying to place new sample with a prior timestamp."
+
         self._update(state, t)
         internal_time = self.time()
         assert np.isclose(internal_time, t), "Internal time was updated."
@@ -245,6 +254,10 @@ class Model:
             assert self.get_history_size() == current_length, "Override did not add new sample."
         else:
             assert self.get_history_size() == current_length + 1, "New sample was added."
+
+    def get_last_commit_time(self):
+        assert len(self.signals[self.TIME]) > 0, "Not supposed to call this function prior to any sampling."
+        return self.signals[self.TIME][-1]
 
     def get_history_size(self):
         size = len(self.signals[self.TIME])

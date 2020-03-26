@@ -38,7 +38,7 @@ class VirtualTrackingRobotti(VirtualFMU):
 
         self.model.tolerance = 0.1
         self.model.horizon = 5.0
-        self.model.max_iterations = 10
+        self.model.max_iterations = 100
         self.model.cooldown = 5.0
         self.model.nsamples = 20
         self.model.time_step = 0.1

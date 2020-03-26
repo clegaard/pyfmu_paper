@@ -272,10 +272,12 @@ class TestExperiments(unittest.TestCase):
         print(m.robot.Iz)
         print(m.robot.Car)
 
-        ModelSolver().simulate(m, 0.0, 30, 0.1)
+        stop_time = 15.0
+        ModelSolver().simulate(m, 0.0, stop_time, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(m.signals['time'], m.driver.signals['steering'], label='steering')
+        p1.plot(m.signals['time'], [m.driver.steering(-(stop_time - t)) for t in m.signals['time']], label='steering')
         p1.legend()
         p2.plot(m.robot.signals['X'], m.robot.signals['Y'], label='dX vs dY')
         p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'], label='~dX vs ~dY')
