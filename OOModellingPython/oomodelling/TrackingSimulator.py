@@ -39,7 +39,7 @@ class TrackingSimulator(Model):
         return error
 
     def compute_error(self, tracked_solutions, new_state_trajectories):
-        assert len(tracked_solutions) == len(new_state_trajectories)
+        assert len(tracked_solutions) == len(new_state_trajectories), "Solutions and state trajectories appear consistent."
         sum = 0
         for (sol, actual) in zip(tracked_solutions, new_state_trajectories):
             sum += ((sol-actual)**2).sum()
@@ -54,7 +54,7 @@ class TrackingSimulator(Model):
         for (sol_signal, actual) in self._matched_signals:
             tracked_solutions.append(np.array([sol_signal(-(t - ti)) for ti in error_space]))
             actual_signals.append(np.array([actual(-(t - ti)) for ti in error_space]))
-        assert len(tracked_solutions) == len(self._matched_signals) == len(actual_signals)
+        assert len(tracked_solutions) == len(self._matched_signals) == len(actual_signals), "Solutions and state trajectories appear consistent."
         return error_space, tracked_solutions, actual_signals
 
     def set_time(self, t):

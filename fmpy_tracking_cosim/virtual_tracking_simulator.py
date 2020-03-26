@@ -14,7 +14,7 @@ import numpy as np
 from trackingsimulatorproject import RobottiTrackingSimulator
 
 
-class VirtualDriver(VirtualFMU):
+class VirtualTrackingRobotti(VirtualFMU):
     def __init__(self, instanceName):
         ref = 0
         self.steering = ref
@@ -29,12 +29,12 @@ class VirtualDriver(VirtualFMU):
         # Internal model
         self.model = RobottiTrackingSimulator()
 
-        self.model.dbike.deltaf = lambda: self.steering
-        self.model.steering = lambda: self.steering
-        self.model.to_track_X = lambda: self.X
-        self.model.to_track_Y = lambda: self.Y
-        self.model.to_track_vx = lambda: self.vx
-        self.model.dbike.vx = lambda: self.vx
+        self.model.dbike.deltaf = lambda: self.state[self.steering]
+        self.model.steering = lambda: self.state[self.steering]
+        self.model.to_track_X = lambda: self.state[self.X]
+        self.model.to_track_Y = lambda: self.state[self.Y]
+        self.model.to_track_vx = lambda: self.state[self.vx]
+        self.model.dbike.vx = lambda: self.state[self.vx]
 
         self.model.tolerance = 0.1
         self.model.horizon = 5.0
@@ -50,19 +50,18 @@ class VirtualDriver(VirtualFMU):
         self.tracking_Y = ref
         ref += 1
 
-
+        self.start_time = 0.0
 
         super().__init__(instanceName, ref)
 
     def reset(self):
         super().reset()
-        self.state[self.steering] = 0.0
-        self.driver.set_time(self.start_time)
+        self.start_time = 0.0
 
     def setupExperiment(self, tolerance=None, startTime=0.0, stopTime=None):
         super().setupExperiment(tolerance, startTime, stopTime)
         self.start_time = startTime
-        self.driver.set_time(startTime)
+        self.model.set_time(startTime)
 
     def exitInitializationMode(self):
         super().exitInitializationMode()
@@ -71,13 +70,19 @@ class VirtualDriver(VirtualFMU):
         self.driver.record_state(x, self.start_time)
 
     def doStep(self, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint=fmi2True):
-        f = self.driver.derivatives()
-        x = self.driver.state_vector()
+        f = self.model.derivatives()
+        x = self.model.state_vector()
+        assert np.isclose(self.model.time(), currentCommunicationPoint), "np.isclose(self.model.time(), current_time)"
+        assert np.isclose(self.model.dbike.time(), currentCommunicationPoint), "np.isclose(self.model.dbike.time(), current_time)"
         sol = solve_ivp(f, (currentCommunicationPoint, currentCommunicationPoint + communicationStepSize), x, method=StepRK45, max_step=communicationStepSize,
-                        model=self.driver, t_eval=[currentCommunicationPoint + communicationStepSize])
+                        model=self.model, t_eval=[currentCommunicationPoint + communicationStepSize])
         assert sol.success
-        assert np.isclose(self.driver.time(), currentCommunicationPoint + communicationStepSize)
+        assert np.isclose(self.model.time(),
+                          currentCommunicationPoint + communicationStepSize), "np.isclose(self.model.time(), current_time + step_size)"
+        assert np.isclose(self.model.dbike.time(),
+                          currentCommunicationPoint + communicationStepSize), "np.isclose(self.model.dbike.time(), current_time + step_size)"
 
-        self.state[self.steering] = self.driver.steering()
+        self.state[self.tracking_X] = self.model.dbike.X()
+        self.state[self.tracking_Y] = self.model.dbike.Y()
 
         return fmi2OK

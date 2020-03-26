@@ -28,18 +28,18 @@ class Model:
         self.der(self.TIME, lambda: 1.0)
 
     def _new_signal(self, name):
-        assert name not in self.signals.keys()
+        assert name not in self.signals.keys(), "Signal already defined."
         self.signals[name] = []
 
     def state(self, init):
-        assert self._under_construction
+        assert self._under_construction, "Not under construction."
         return lambda name: self._new_state(name, init)
 
     def _new_state(self, name, init):
-        assert self._under_construction
-        assert name.isidentifier()
-        assert not callable(init)
-        assert not hasattr(self, name)
+        assert self._under_construction, "Not under construction."
+        assert name.isidentifier(), "Name must be valid identifier."
+        assert not callable(init), "Init formula must not be callable."
+        assert not hasattr(self, name), "Name must not be already defined."
 
         self._states.append(name)
         self._initial_values[name] = init
@@ -50,66 +50,66 @@ class Model:
         return self._get_state_function(name)
 
     def _set_input(self, name, value):
-        assert name in self._inputs
+        assert name in self._inputs, "Name must be an input."
         self._bypass_set_attr = True
         setattr(self, name, value)
         self._bypass_set_attr = False
 
     def der(self, state, fun):
-        assert self._under_construction
-        assert callable(fun)
-        assert hasattr(self, state)
+        assert self._under_construction, "Not under construction."
+        assert callable(fun), "Fun must be callable."
+        assert hasattr(self, state), "State must be an attribute of the object."
         der_name = self._der(state)
         self._new_signal(der_name)
         self._state_derivatives[state] = self._get_signal_function(der_name, fun)
 
     def _new_input(self, name, def_formula):
-        assert self._under_construction
-        assert name.isidentifier()
-        assert not hasattr(self, name)
+        assert self._under_construction, "Not under construction."
+        assert name.isidentifier(), "Name must be valid identifier."
+        assert not hasattr(self, name), "Name must not be already defined."
         self._inputs.append(name)
         self._new_signal(name)
         return self._get_signal_function(name, def_formula)
 
     def input(self, def_formula):
-        assert self._under_construction
-        assert callable(def_formula)
+        assert self._under_construction, "Not under construction."
+        assert callable(def_formula), "def_formula must be callable."
         return lambda name: self._new_input(name, def_formula)
 
     def _new_var(self, name, fun):
-        assert self._under_construction
-        assert callable(fun)
-        assert name.isidentifier()
-        assert not hasattr(self, name)
+        assert self._under_construction, "Not under construction."
+        assert callable(fun), "Fun must be callable."
+        assert name.isidentifier(), "Name must be valid identifier."
+        assert not hasattr(self, name), "Name must not be already defined."
         self._vars.append(name)
         self._new_signal(name)
         return self._get_signal_function(name, fun)
 
     def var(self, fun):
-        assert self._under_construction
+        assert self._under_construction, "Not under construction."
         return lambda name: self._new_var(name, fun)
 
     def _new_parameter(self, name, val):
-        assert name.isidentifier()
-        assert not callable(val)
-        assert not hasattr(self, name)
+        assert name.isidentifier(), "Name must be valid identifier."
+        assert not callable(val), "val must be callable."
+        assert not hasattr(self, name), "Name must not be already defined."
         self._parameters.append(name)
         return val
 
     def parameter(self, val):
-        assert self._under_construction
+        assert self._under_construction, "Not under construction."
         return lambda name: self._new_parameter(name, val)
 
     def model(self, name, obj):
-        assert self._under_construction
-        assert not callable(obj)
-        assert name.isidentifier()
-        assert not hasattr(self, name)
+        assert self._under_construction, "Not under construction."
+        assert not callable(obj), "obj must not be callable."
+        assert name.isidentifier(), "Name must be valid identifier."
+        assert not hasattr(self, name), "Name must not be already defined."
         self._models.append(name)
         return obj
 
     def save(self):
-        assert self._under_construction
+        assert self._under_construction, "Not under construction."
         self._bypass_set_attr = True
         self._under_construction = False
         self._num_states = self.nstates()
@@ -130,7 +130,7 @@ class Model:
     If you want different initial values, then set them after calling this function.
     """
     def reset(self):
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
 
         def reset_signal(s):
             signal = self.signals[s]
@@ -147,19 +147,19 @@ class Model:
     def assert_initialized(self):
 
         def _assert_initialized(s):
-            assert s in self.signals.keys()
-            assert len(self.signals[s]) == 0
+            assert s in self.signals.keys(), "Signal must exist."
+            assert len(self.signals[s]) == 0, "Signal must be empty."
 
         self._proc_signals(_assert_initialized,
                            lambda m: getattr(self, m).assert_initialized())
 
     def nstates(self):
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
         nstates_models = sum([getattr(self, m).nstates() for m in self._models])
         return nstates_models + len(self._states)
 
     def nsignals(self):
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
         totallist = [1,
                      len(self._states) * 2,
                      len(self._inputs),
@@ -169,7 +169,7 @@ class Model:
         return sum(totallist)
 
     def signal_names(self, prefix=''):
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
         return self._fmap_signals(lambda s: prefix + s,
                                   lambda m: getattr(self, m).signal_names(prefix + m + '.'))
 
@@ -177,15 +177,15 @@ class Model:
         """
         Creates a flat state from the internal state and models
         """
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
         return self._fmap_states(lambda s: getattr(self, s)(),
                                  lambda m: getattr(self, m).state_vector())
 
     def derivatives(self):
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
 
         def model(t, npstate):
-            assert not self._under_construction
+            assert not self._under_construction, "Under construction."
             # Map state to internal state
             self._update(npstate, t)
             ders = self._compute_derivatives()
@@ -198,12 +198,12 @@ class Model:
         """
         Takes a flat state, and propagates it to the internal models.
         """
-        assert not self._under_construction
+        assert not self._under_construction, "Under construction."
 
         init_i = i
 
         for s in self._states:
-            assert i < len(state)
+            assert i < len(state), "State index must lie within state array."
             setattr(self, s, state[i])
             i += 1
 
@@ -212,7 +212,7 @@ class Model:
             i += model._update(state, t, i)
 
         num_read = i - init_i
-        assert len(state) >= num_read
+        assert len(state) >= num_read, "Cannot read more than the object has."
 
         return num_read
 
@@ -223,7 +223,7 @@ class Model:
         """
         self._update(state, t)
         internal_time = self.time()
-        assert np.isclose(internal_time, t)
+        assert np.isclose(internal_time, t), "Internal time was updated."
         self._step_commit(override)
 
     # noinspection PyProtectedMember
@@ -242,31 +242,31 @@ class Model:
                             lambda v: _commit_signal(v, getattr(self, v)()),
                             lambda m: getattr(self, m)._step_commit(override))
         if override:
-            assert self.get_history_size() == current_length
+            assert self.get_history_size() == current_length, "Override did not add new sample."
         else:
-            assert self.get_history_size() == current_length + 1
+            assert self.get_history_size() == current_length + 1, "New sample was added."
 
     def get_history_size(self):
         size = len(self.signals[self.TIME])
 
         def assertsize_signal(signal):
-            assert len(self.signals[self.TIME]) == size
+            assert len(self.signals[self.TIME]) == size, "Signals size is consistent."
 
         def assertsize_model(model):
-            assert getattr(self, model).get_history_size() == size
+            assert getattr(self, model).get_history_size() == size, "Signals size is consistent."
 
         self._proc_signals(assertsize_signal, assertsize_model)
 
         return size
 
     def current_signals(self):
-        assert not self._under_construction
+        assert not self._under_construction, "Not under construction."
         return self._fmap_signals(lambda s: getattr(self, s)(),
                                   lambda m: getattr(self, m).current_signals())
 
     def _get_state_function(self, name):
-        assert self._under_construction
-        assert name in self._current_state_values.keys()
+        assert self._under_construction, "Under construction."
+        assert name in self._current_state_values.keys(), "Name has been defined."
 
         def signal(d=None):
             if d is None or len(self.signals[name]) == 0 or np.isclose(d, 0.0):
@@ -282,17 +282,17 @@ class Model:
                 value = fun()
             else:
                 value = self._delayed_signal_value(name, d)
-            assert value is not None
+            assert value is not None, "Value is not None."
             return value
 
         return signal
 
     def _delayed_signal_value(self, name, d):
-        assert name in self.signals.keys()
+        assert name in self.signals.keys(), "Name must be a signal."
         t = self.time()
         ts = max(0, t+d)  # if -d goes beyond, we set ts=0
         idx = self._earliest_time(ts)
-        assert idx <= len(self.signals[name])-1
+        assert idx <= len(self.signals[name])-1, "idx lies within the array domain."
         value = self.signals[name][idx]
         return value
 
@@ -322,7 +322,7 @@ class Model:
         return 'der_' + s
 
     def get_state_idx(self, state_name):
-        assert not self._under_construction
+        assert not self._under_construction, "Not under construction."
         return self._states.index(state_name)
 
     def _fmap_states(self, f_states, f_models):
@@ -330,7 +330,7 @@ class Model:
         models_data = [f_models(m) for m in self._models]
         total = [np.array(internal_data)] + models_data
         total_flat = reduce(lambda a, b: np.concatenate((a, b)), total)
-        assert len(total_flat) == self._num_states
+        assert len(total_flat) == self._num_states, "Flatten worked."
         return total_flat
 
     def __proc_signals(self, pstate, pder, pin, pvar, pmodel):
@@ -367,7 +367,7 @@ class Model:
         total_flat = reduce(lambda a, b: np.concatenate(a,b), total)
 
         num = self.nsignals()
-        assert len(total_flat) == num
+        assert len(total_flat) == num, "Flatten worked."
         return total_flat
 
     def __setattr__(self, key, value):
@@ -415,8 +415,8 @@ class Model:
         idx = len(ts) - 1  # Start at the end
         while ts[idx] > t and idx > 0:
             idx -= 1
-        assert (idx == len(ts) - 1 or idx == 0 or (ts[idx] <= t and ts[idx + 1] > t))
-        assert 0 <= idx <= len(ts)-1
+        assert (idx == len(ts) - 1 or idx == 0 or (ts[idx] <= t and ts[idx + 1] > t)), "Idx lies within the correct domain."
+        assert 0 <= idx <= len(ts)-1, "Idx lies within the correct domain."
         return idx
 
     def discrete_step(self):

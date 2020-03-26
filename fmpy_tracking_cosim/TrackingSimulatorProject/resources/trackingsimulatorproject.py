@@ -123,9 +123,6 @@ class TrackingSimulatorProject(Fmi2Slave):
         self.start_time = start_time
         self.model.set_time(start_time)
 
-    def enter_initialization_mode(self):
-        pass
-
     def exit_initialization_mode(self):
         self.model.assert_initialized()
         x = self.model.state_vector()
