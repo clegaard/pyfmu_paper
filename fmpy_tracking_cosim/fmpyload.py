@@ -233,14 +233,14 @@ class MyTestCase(unittest.TestCase):
                                        source_fmu=robotti,
                                        target_fmu=tracking,
                                        source_vr=[robotti.X, robotti.Y, robotti.vx],
-                                       target_vr=[tracking.vars['X'].valueReference, tracking.vars['Y'].valueReference, tracking.vars['vx'].valueReference])
+                                       target_vr=[tracking.X, tracking.Y, tracking.vx])
 
         tracking_out = OutputConnection(value_type=VarType.REAL,
                                        signal_type=SignalType.CONTINUOUS,
                                        source_fmu=tracking,
                                        source_vr=[
-                                           tracking.vars['tracking_X'].valueReference,
-                                           tracking.vars['tracking_Y'].valueReference
+                                           tracking.tracking_X,
+                                           tracking.tracking_Y
                                        ])
 
         connections = [steering_robotti, steering_tracking, robotti_tracking]
@@ -267,14 +267,13 @@ class MyTestCase(unittest.TestCase):
         steering.terminate()
         robotti.terminate()
         tracking.terminate()
-        FMULoader.unload(tracking)
 
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="steering")
         p1.legend()
         p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], 'o', label='X vs Y')
-        p2.plot(results.signals[tracking.instanceName][tracking.vars['tracking_X'].valueReference], results.signals[tracking.instanceName][tracking.vars['tracking_Y'].valueReference], 'o', label='~X vs ~Y')
+        p2.plot(results.signals[tracking.instanceName][tracking.tracking_X], results.signals[tracking.instanceName][tracking.tracking_Y], 'o', label='~X vs ~Y')
         p2.legend()
         plt.show()
 

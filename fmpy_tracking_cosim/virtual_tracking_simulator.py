@@ -65,9 +65,9 @@ class VirtualTrackingRobotti(VirtualFMU):
 
     def exitInitializationMode(self):
         super().exitInitializationMode()
-        self.driver.assert_initialized()
-        x = self.driver.state_vector()
-        self.driver.record_state(x, self.start_time)
+        self.model.assert_initialized()
+        x = self.model.state_vector()
+        self.model.record_state(x, self.start_time)
 
     def doStep(self, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint=fmi2True):
         f = self.model.derivatives()

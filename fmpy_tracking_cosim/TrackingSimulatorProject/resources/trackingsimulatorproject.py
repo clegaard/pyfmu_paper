@@ -185,7 +185,7 @@ class RobottiTrackingSimulator(TrackingSimulator):
 
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
         new_caf = new_parameters[0]
-        assert new_caf > 0.0
+        assert new_caf > 0.0, "Negative parameter?"
         m = self.get_new_bike_model()
         # Set new parameter
         m.Caf = lambda: new_caf
