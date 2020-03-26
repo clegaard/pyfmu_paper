@@ -37,13 +37,13 @@ class VirtualTrackingRobotti(VirtualFMU):
         self.model.dbike.vx = lambda: self.state[self.vx]
 
         self.model.tolerance = 0.1
-        self.model.horizon = 5.0
-        self.model.max_iterations = 100
-        self.model.cooldown = 5.0
+        self.model.horizon = 2.0
+        self.model.max_iterations = 20
+        self.model.cooldown = 2.0
         self.model.nsamples = 20
         self.model.time_step = 0.1
-        self.model.conv_xatol = 30.0
-        self.model.conv_fatol = 1.0
+        self.model.conv_xatol = 1.0
+        self.model.conv_fatol = 0.1
 
         self.tracking_X = ref
         ref += 1
