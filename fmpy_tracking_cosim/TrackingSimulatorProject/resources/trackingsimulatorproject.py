@@ -83,14 +83,15 @@ class TrackingSimulatorProject(Fmi2Slave):
         self.model.to_track_vx = lambda: self.vx
         self.model.dbike.vx = lambda: self.vx
 
-        self.model.tolerance = 0.1
-        self.model.horizon = 5.0
-        self.model.max_iterations = 10
+        # TODO: Move these to the parameters.
+        self.model.tolerance = 0.01
+        self.model.horizon = 2.0
+        self.model.max_iterations = 20
         self.model.cooldown = 5.0
         self.model.nsamples = 20
         self.model.time_step = 0.1
-        self.model.conv_xatol = 30.0
-        self.model.conv_fatol = 1.0
+        self.model.conv_xatol = 1e7
+        self.model.conv_fatol = 1e-3
 
         # Outputs
         self.tracking_X = 0.0

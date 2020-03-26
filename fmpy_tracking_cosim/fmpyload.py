@@ -140,7 +140,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_run_tracking_robotti(self):
         def logger(msg):
-            print(msg)
+            # print(msg)
+            pass
 
         steering = VirtualDriver('steering')
         robotti = VirtualRobotti('robot')
@@ -186,13 +187,13 @@ class MyTestCase(unittest.TestCase):
             connections=connections,
             step_size=0.01,
             print_interval=0.01,
-            stop_time=30.0,
+            stop_time=60.0,
             outputs=output_connections,
             real_parameters=real_parameters)
 
         steering.instantiate(loggingOn=False)
         robotti.instantiate(loggingOn=False)
-        tracking.fmu.instantiate(loggingOn=True)
+        tracking.fmu.instantiate(loggingOn=False)
 
         jacobi = JacobiRunner()
         results = jacobi.run_cosim(scenario, lambda t: print(t))
@@ -205,8 +206,8 @@ class MyTestCase(unittest.TestCase):
 
         p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="steering")
         p1.legend()
-        p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], 'o', label='X vs Y')
-        p2.plot(results.signals[tracking.fmu.instanceName][tracking.vars['tracking_X'].valueReference], results.signals[tracking.fmu.instanceName][tracking.vars['tracking_Y'].valueReference], 'o', label='~X vs ~Y')
+        p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], label='X vs Y')
+        p2.plot(results.signals[tracking.fmu.instanceName][tracking.vars['tracking_X'].valueReference], results.signals[tracking.fmu.instanceName][tracking.vars['tracking_Y'].valueReference], label='~X vs ~Y')
         p2.legend()
         plt.show()
 
@@ -253,7 +254,7 @@ class MyTestCase(unittest.TestCase):
         fmus = [steering, robotti, tracking]
 
         real_parameters = {}
-        stop_time = 15.0
+        stop_time = 30.0
         scenario = CosimScenario(
             fmus=fmus,
             connections=connections,
@@ -265,7 +266,7 @@ class MyTestCase(unittest.TestCase):
 
         steering.instantiate(loggingOn=False)
         robotti.instantiate(loggingOn=False)
-        tracking.instantiate(loggingOn=True)
+        tracking.instantiate(loggingOn=False)
 
         jacobi = JacobiRunner()
         results = jacobi.run_cosim(scenario, lambda t: print(t))
@@ -273,15 +274,22 @@ class MyTestCase(unittest.TestCase):
         robotti.terminate()
         tracking.terminate()
 
-        _, (p1, p2) = plt.subplots(1, 2)
+        _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
         p1.plot(results.timestamps, results.signals[steering.instanceName][steering.steering], label="steering")
-        p1.plot(results.timestamps, results.signals[tracking.instanceName][tracking.steering], label="track_steering")
-        p1.plot(results.timestamps, [tracking.model.steering(-(stop_time-t)) for t in results.timestamps], label="delayed_track_steering")
+        # p1.plot(results.timestamps, results.signals[tracking.instanceName][tracking.steering], label="track_steering")
+        # p1.plot(results.timestamps, [tracking.model.steering(-(stop_time-t)) for t in results.timestamps], label="delayed_track_steering")
         p1.legend()
-        p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], 'o', label='X vs Y')
-        p2.plot(results.signals[tracking.instanceName][tracking.tracking_X], results.signals[tracking.instanceName][tracking.tracking_Y], 'o', label='~X vs ~Y')
+        p2.plot(results.signals[robotti.instanceName][robotti.X], results.signals[robotti.instanceName][robotti.Y], label='X vs Y')
+        p2.plot(results.signals[tracking.instanceName][tracking.tracking_X], results.signals[tracking.instanceName][tracking.tracking_Y], label='~X vs ~Y')
+        for calib in tracking.model.recalibration_history:
+            p2.plot(calib.xs[tracking.model.X_idx, :], calib.xs[tracking.model.Y_idx, :], '--', label='recalibration')
         p2.legend()
+        p3.plot(tracking.model.signals['time'], tracking.model.signals['error'], label='error')
+        p3.plot(tracking.model.signals['time'], [tracking.model.tolerance for t in tracking.model.signals['time']], label='tolerance')
+        p3.legend()
+        p4.plot(tracking.model.dbike.signals['time'], tracking.model.dbike.signals['Caf'], label='approx_Caf')
+        p4.legend()
         plt.show()
 
 
