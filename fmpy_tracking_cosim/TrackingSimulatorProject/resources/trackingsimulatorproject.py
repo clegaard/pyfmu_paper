@@ -180,8 +180,8 @@ class RobottiTrackingSimulator(TrackingSimulator):
         b.lf = 0.8525000000000001
         b.lr = 0.6974999999999999
         b.Iz = 2135.7808333333332
-        b.Caf = lambda: 20000.0
-        b.Car = 20000.0
+        b.Caf = lambda: 10000.0
+        b.Car = 10000.0
         return b
 
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):

@@ -2,6 +2,7 @@ import unittest
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize_scalar
+from random import seed
 
 from BikeKinematicModel import BikeKinematicModel
 from BikeKinematicModelWithDriver import BikeKinematicModelWithDriver
@@ -15,6 +16,7 @@ from BikeTrackingWithKinematic import TrackingSimulator, BikeTrackingSimulatorKi
 from RobottiBikeModelsWithDriver import RobottiBikeModelsWithDriver
 from RobottiDynamicModelWithDriver import RobottiDynamicModelWithDriver
 from RobottiTrackingSimulator import RobottiTrackingSimulator
+from RobottiTrackingSimulatorRandomNoise import RobottiTrackingSimulatorRandomNoise
 
 
 class TestExperiments(unittest.TestCase):
@@ -48,13 +50,15 @@ class TestExperiments(unittest.TestCase):
 
     def test_dynamic_bike_model_with_driver(self):
         m = BikeDynamicModelWithDriver()
-
+        m.dbike.Caf = lambda: 800
         m.reset()
-        ModelSolver().simulate(m, 0.0, 10.0, 0.1)
+        ModelSolver().simulate(m, 0.0, 40.0, 0.1)
         _, (p1, p2) = plt.subplots(1, 2)
 
         p1.plot(m.signals['time'], m.ddriver.signals['steering'])
-        p2.plot(m.dbike.signals['X'], m.dbike.signals['Y'])
+        # p1.plot(m.signals['time'], m.dbike.signals['af'])
+        # p1.plot(m.signals['time'], m.dbike.signals['Fcf'])
+        p2.scatter(m.dbike.signals['X'], m.dbike.signals['Y'], c=m.signals['time'])
         plt.show()
 
     def plot_twobikes(self, delay, k, nperiods, stoptime):
@@ -161,10 +165,11 @@ class TestExperiments(unittest.TestCase):
         plt.show()
 
     def test_tracking_dynamic(self):
+        seed(1)
         m = BikeTrackingSimulatorDynamic()
         # Bump the Caf after some time
-        # m.to_track.dbike.Caf = lambda: 800 if m.time() < 7.0 else 100
-        m.to_track.dbike.Caf = lambda: 500
+        # m.to_track.dbike.Caf = lambda: 800 if m.time() < 13.0 else 500
+        # m.to_track.dbike.Caf = lambda: 800
         m.tolerance = 0.02
         m.horizon = 5.0
         m.cooldown = 5.0
@@ -173,14 +178,14 @@ class TestExperiments(unittest.TestCase):
         m.conv_xatol = 30.0
         m.conv_fatol = 1.0
 
-        m.to_track.ddriver.nperiods = 1
+        m.to_track.ddriver.nperiods = 2
 
-        ModelSolver().simulate(m, 0.0, 10, 0.1)
+        ModelSolver().simulate(m, 0.0, 60.0, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
-        p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
+        p1.scatter(m.signals['time'], m.to_track.ddriver.signals['steering'], c=m.signals['time'], s=1.0, label='steering')
         p1.legend()
-        p2.plot(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'], label='dX vs dY')
+        p2.scatter(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'], c=m.signals['time'], s=1.0, label='dX vs dY')
         p2.plot(m.tracking.signals['X'], m.tracking.signals['Y'], label='~dX vs ~dY')
         for calib in m.recalibration_history:
             p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
@@ -194,27 +199,27 @@ class TestExperiments(unittest.TestCase):
         plt.show()
 
 
-    def test_tracking_dynamic_without_state_restore(self):
+    def test_generate_paper_figure(self):
         m = BikeTrackingWithDynamicWithoutStateRestore()
-        # Bump the Caf after some time
-        # m.to_track.dbike.Caf = lambda: 800 if m.time() < 1.0 else 100
-        m.to_track.dbike.Caf = lambda: 500
-        m.tolerance = 0.02
+        m.tolerance = 0.2
         m.horizon = 5.0
         m.cooldown = 5.0
         m.nsamples = 10
+        m.max_iterations = 20
         m.time_step = 0.1
-        m.conv_xatol = 30.0
-        m.conv_fatol = 1.0
+        m.conv_xatol = 1e3
+        m.conv_fatol = 0.01
 
-        m.to_track.ddriver.nperiods = 1
+        m.to_track.ddriver.nperiods = 2
 
-        ModelSolver().simulate(m, 0.0, 10, 0.1)
+        ModelSolver().simulate(m, 0.0, 40.0, 0.1)
         _, (p1, p2, p3, p4) = plt.subplots(1, 4)
 
-        p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'], label='steering')
+        p1.plot(m.signals['time'], m.to_track.ddriver.signals['steering'],
+                   label='steering')
         p1.legend()
-        p2.plot(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'], label='dX vs dY')
+        p2.plot(m.to_track.dbike.signals['X'], m.to_track.dbike.signals['Y'],
+                   label='dX vs dY')
         p2.plot(m.tracking.signals['X'], m.tracking.signals['Y'], label='~dX vs ~dY')
         for calib in m.recalibration_history:
             p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
@@ -289,5 +294,42 @@ class TestExperiments(unittest.TestCase):
         p3.legend()
         # p4.plot(m.robot.signals['time'], m.robot.signals['Caf'], label='real_Caf')
         p4.plot(m.dbike.signals['time'], m.dbike.signals['Caf'], label='approx_Caf')
+        p4.legend()
+        plt.show()
+
+
+    def test_robotti_tracking_randomnoise(self):
+        m = RobottiTrackingSimulatorRandomNoise()
+        m.driver.width = 8.0
+        m.driver.nperiods = 2
+        # Bump the Caf after some time
+        # m.robot.Caf = lambda: max(1000, 20000 - 1000*m.time())
+        m.robot.Caf = lambda: 200000
+        m.tolerance = 1e10 # 0.002
+        m.horizon = 20.0
+        m.max_iterations = 20
+        m.cooldown = 10.0
+        m.nsamples = 20
+        m.time_step = 0.1
+        m.conv_xatol = 1e3
+        m.conv_fatol = 0.1
+
+        stop_time = 60.0
+        ModelSolver().simulate(m, 0.0, stop_time, 0.1)
+        _, (p1, p2, p3, p4) = plt.subplots(1, 4)
+
+        p1.plot(m.signals['time'], m.driver.signals['steering'], label='steering')
+        p1.plot(m.signals['time'], [m.driver.steering(-(stop_time - t)) for t in m.signals['time']], label='steering')
+        p1.legend()
+        p2.plot(m.robot.signals['X'], m.robot.signals['Y'], label='dX vs dY')
+        p2.plot(m.tracking.signals['X'], m.tracking.signals['Y'], label='~dX vs ~dY')
+        for calib in m.recalibration_history:
+            p2.plot(calib.xs[m.X_idx, :], calib.xs[m.Y_idx, :], '--', label='recalibration')
+        p2.legend()
+        p3.plot(m.signals['time'], m.signals['error'], label='error')
+        p3.plot(m.signals['time'], [m.tolerance for t in m.signals['time']], label='tolerance')
+        p3.legend()
+        p4.plot(m.robot.signals['time'], m.robot.signals['Caf'], label='real_Caf')
+        p4.plot(m.tracking.signals['time'], m.tracking.signals['Caf'], label='approx_Caf')
         p4.legend()
         plt.show()

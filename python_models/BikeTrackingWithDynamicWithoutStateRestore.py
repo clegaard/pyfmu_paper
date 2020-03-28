@@ -1,3 +1,5 @@
+from random import random
+
 import numpy as np
 
 from BikeDynamicModel import BikeDynamicModel
@@ -12,6 +14,10 @@ class BikeTrackingWithDynamicWithoutStateRestore(TrackingSimulator):
 
         self.to_track = BikeDynamicModelWithDriver()
 
+        self._rand_Caf = 800
+
+        self.to_track.dbike.Caf = lambda: self._rand_Caf
+
         self.tracking = BikeDynamicModel()
 
         self.tracking.deltaf = self.to_track.ddriver.steering
@@ -24,6 +30,14 @@ class BikeTrackingWithDynamicWithoutStateRestore(TrackingSimulator):
 
         self.save()
 
+    def random_Caf(self):
+        return 800 + 10.0*random() if self.time() < 13.0 else 500 + 10.0*random()
+
+    def discrete_step(self):
+        super().discrete_step()
+        self._rand_Caf = self.random_Caf()
+        return True
+
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
         new_caf = new_parameters[0]
         m = BikeDynamicModel()
@@ -35,9 +49,9 @@ class BikeTrackingWithDynamicWithoutStateRestore(TrackingSimulator):
         # Set the state to the past state: This is the main different wrt to BikeTrackingWithDynamic.
         # Here, the state is set to the inaccurate past state.
         m.x = self.tracking.x(-(tf - t0))
-        m.X = self.tracking.X(-(tf - t0))
+        m.X = self.to_track.dbike.X(-(tf - t0))
         m.y = self.tracking.y(-(tf - t0))
-        m.Y = self.tracking.Y(-(tf - t0))
+        m.Y = self.to_track.dbike.Y(-(tf - t0))
         m.vx = self.tracking.vx(-(tf - t0))
         m.vy = self.tracking.vy(-(tf - t0))
         m.psi = self.tracking.psi(-(tf - t0))

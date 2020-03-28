@@ -10,8 +10,8 @@ class BikeDynamicModel(Model):
         self.lr = self.parameter(1.738)  # distance from the the center of mass to the rear (m)";
         self.m = self.parameter(1292.2)  # Vehicle's mass (kg)";
         self.Iz = self.parameter(1)  # Yaw inertial (kgm^2) (Not taken from the book)";
-        self.Caf = self.input(lambda: 800)  # Front Tire cornering stiffness";
-        self.Car = self.parameter(800)  # Rear Tire cornering stiffness";
+        self.Caf = self.input(lambda: 800.0)  # Front Tire cornering stiffness";
+        self.Car = self.parameter(800.0)  # Rear Tire cornering stiffness";
         self.x = self.state(0.0)  # longitudinal displacement in the body frame";
         self.X = self.state(0.0)  # x coordinate in the reference frame";
         self.Y = self.state(0.0)  # x coordinate in the reference frame";

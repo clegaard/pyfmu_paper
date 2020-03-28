@@ -1,14 +1,13 @@
 from oomodelling.Model import Model
 
-
 class DriverDynamic(Model):
 
     def __init__(self):
         super().__init__()
-        self.width = self.parameter(0.335)
+        self.width = self.parameter(2.6)
         self.amplitude = self.parameter(0.8)
-        self.risingtime = self.parameter(5.0)
-        self.starttime = self.parameter(5.0)
+        self.risingtime = self.parameter(3.0)
+        self.starttime = self.parameter(3.0)
         self.steering = self.var(self.get_steering)
         self.last_period_endtime = 0
         self.nperiods = self.parameter(2)

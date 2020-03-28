@@ -1,3 +1,5 @@
+from random import random
+
 import numpy as np
 
 from BikeDynamicModel import BikeDynamicModel
@@ -12,6 +14,10 @@ class BikeTrackingSimulatorDynamic(TrackingSimulator):
 
         self.to_track = BikeDynamicModelWithDriver()
 
+        self._rand_Caf = 800
+
+        self.to_track.dbike.Caf = lambda: self._rand_Caf
+
         self.tracking = BikeDynamicModel()
 
         self.tracking.deltaf = self.to_track.ddriver.steering
@@ -23,6 +29,14 @@ class BikeTrackingSimulatorDynamic(TrackingSimulator):
         self.Y_idx = self.tracking.get_state_idx('Y')
 
         self.save()
+
+    def random_Caf(self):
+        return self._rand_Caf + 10.0*random()
+
+    def discrete_step(self):
+        super().discrete_step()
+        self._rand_Caf = self.random_Caf()
+        return True
 
     def run_whatif_simulation(self, new_parameters, t0, tf, tracked_solutions, error_space, only_tracked_state=True):
         new_caf = new_parameters[0]

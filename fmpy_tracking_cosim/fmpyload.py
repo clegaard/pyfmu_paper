@@ -254,7 +254,7 @@ class MyTestCase(unittest.TestCase):
         fmus = [steering, robotti, tracking]
 
         real_parameters = {}
-        stop_time = 30.0
+        stop_time = 60.0
         scenario = CosimScenario(
             fmus=fmus,
             connections=connections,
