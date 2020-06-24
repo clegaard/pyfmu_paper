@@ -17,7 +17,6 @@ class BikeKinematicModel(Model):
         self.psi = self.state(0.0)  # Yaw";
         self.a = self.input(lambda: 0.0)  # longitudinal acceleration";
         self.deltaf = self.input(lambda: 0.0)  # steering angle at the front wheel";
-        # "steering angle at the front wheel (rad)";
         self.beta = self.var(lambda: math.atan((self.lr/(self.lf + self.lr)) * math.tan(self.deltaf())))
         self.der('x', lambda: self.v() * math.cos(self.psi() + self.beta()))
         self.der('y', lambda: self.v() * math.sin(self.psi() + self.beta()))
