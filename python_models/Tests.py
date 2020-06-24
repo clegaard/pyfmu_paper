@@ -232,7 +232,6 @@ class TestExperiments(unittest.TestCase):
         p4.legend()
         plt.show()
 
-
     def test_robotti_model_with_driver(self):
         m = RobottiDynamicModelWithDriver()
 
@@ -243,6 +242,27 @@ class TestExperiments(unittest.TestCase):
         p1.plot(m.signals['time'], m.driver.signals['steering'])
         p2.plot(m.rbike.signals['X'], m.rbike.signals['Y'])
         p3.plot(m.signals['time'], m.rbike.signals['vx'])
+        plt.show()
+
+    def test_counter_intuitive_robotti(self):
+        def simulate(caf):
+            m = RobottiDynamicModelWithDriver()
+            m.rbike.Caf = lambda: caf
+            ModelSolver().simulate(m, 0.0, 10.0, 0.1)
+            return m
+
+        c1 = 20000
+        c2 = 100
+        m1 = simulate(c1)
+        m2 = simulate(c2)
+
+        _, (p1, p2, p3) = plt.subplots(1, 3)
+        p1.plot(m1.signals['time'], m1.driver.signals['steering'])
+        p2.plot(m1.rbike.signals['X'], m1.rbike.signals['Y'], label="caf={}".format(c1))
+        p2.plot(m2.rbike.signals['X'], m2.rbike.signals['Y'], label="caf={}".format(c2))
+        p2.legend()
+        p3.plot(m1.signals['time'], m1.rbike.signals['vy'])
+        p3.plot(m2.signals['time'], m2.rbike.signals['vy'])
         plt.show()
 
     def test_plot_two_robotti_models(self):
@@ -305,7 +325,7 @@ class TestExperiments(unittest.TestCase):
         # Bump the Caf after some time
         # m.robot.Caf = lambda: max(1000, 20000 - 1000*m.time())
         m.robot.Caf = lambda: 200000
-        m.tolerance = 1e10 # 0.002
+        m.tolerance = 1e10  # 0.002
         m.horizon = 20.0
         m.max_iterations = 20
         m.cooldown = 10.0

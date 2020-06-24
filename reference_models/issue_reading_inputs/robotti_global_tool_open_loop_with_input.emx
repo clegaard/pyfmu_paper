@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+ <Model version="4.8" build="4.8.2.9993">
+  <Sidops><![CDATA[model 128 184
+ description '<Information>
+ <Description>
+    <Version>4.8</Version>
+<IsMainModel>0</IsMainModel>
+  <KeepParameterValues>False</KeepParameterValues>
+    <LibraryPath>C:\srcctrl\christian\pyfmu_paper\reference_models\issue_reading_inputs\robotti_global_tool_open_loop_with_input.emx</LibraryPath>
+  <TimeStamp>2020-4-29 20:06:27</TimeStamp>
+</Description>
+</Information>';
+ type 'Mainmodel-CC81'
+ end;
+ implementation bg
+  submodels
+   DataFromFile2 584 80
+    description '<Description>
+ <Version>4.0</Version>
+ <IsMainModel>1</IsMainModel>
+ <KeepParameterValues>False</KeepParameterValues>
+ <LibraryPath>Signal\Sources\DataFromFile.emx</LibraryPath>
+ <TimeStamp>2008-1-10 10:17:38</TimeStamp>
+</Description>';
+    type DataFromFile
+     ports
+      signal out Column_1;
+      signal out Column_2;
+      signal out Column_3;
+    end;
+    icon bg bottom
+     figures
+      rectangle 560 64 608 96 color 0 fill 16777215;
+      text 'filedata' 582.4 80 color 0;
+     terminals
+      Column_2 592 96 fixed;
+      Column_3 584 96 fixed;
+    end;
+    implementation eq
+// 20-sim User Editor
+// DataFromFile.dll
+/* CONFIGURATION
+DataVariable true "time" Column_1 1 0
+DataVariable true "x" Column_2 1 0
+DataVariable true "y" Column_3 1 0
+SelectionVariable time 1
+OffsetFirstDataPoint false
+FindRowValueInColumn 0
+END CONFIGURATION */
+parameters
+	string fileName = 'C:\srcctrl\christian\pyfmu_paper\reference_models\issue_reading_inputs\inputs\gps_pos.txt';
+variables
+	real hidden dataFileId;
+	real hidden dll_read_inputs[4];
+
+initialequations
+	dataFileId = dll('DataFromFile.dll', 'InitializeDataFile', fileName);
+code
+
+	dll_read_inputs = [dataFileId; time; 0; 0];
+	Column_1 = dll('DataFromFile.dll', 'GetDataValue', dll_read_inputs);
+	dll_read_inputs = [dataFileId; time; 0; 1];
+	Column_2 = dll('DataFromFile.dll', 'GetDataValue', dll_read_inputs);
+	dll_read_inputs = [dataFileId; time; 0; 2];
+	Column_3 = dll('DataFromFile.dll', 'GetDataValue', dll_read_inputs);
+implementation_end;
+   SignalMonitor 592 160
+    description '<Description><Version>4.0</Version><IsMainModel>1</IsMainModel><KeepParameterValues>False</KeepParameterValues>
+  <LibraryPath>Signal\Block Diagram\SignalMonitor.emx</LibraryPath>
+  <TimeStamp>2007-9-26 12:14:4</TimeStamp>
+</Description>
+';
+    type SignalMonitor
+     ports
+      signal in input_x;
+      signal in input_y;
+    end;
+    icon bg bottom
+     figures
+      rectangle 576 144 608 176 color 0 fill 15132390;
+      rectangle 581.7 149.8 602.3 170.6 color 16711680 fill 11776947 width 2;
+      rectangle 583.8 152.4 599.9 168 color -1 fill 16777215;
+      line 585.9 154.7 585.9 166 color 0 fill 16777215;
+      line 584 164.4 596.5 164.4 color 0 fill 16777215;
+      line 585.5 164.1 598.4 157.7 color 255 fill 16777215;
+    end;
+    implementation eq
+variables
+	real interesting plot_x;
+	real interesting plot_y;
+equations
+	plot_x = input_x;
+	plot_y = input_y;   implementation_end;
+  end;
+  connections
+   DataFromFile2\Column_3 -> SignalMonitor\input_y;
+   SignalMonitor\input_x <- DataFromFile2\Column_2;
+  end;
+ implementation_end;
+]]>
+</Sidops>
+ </Model>
+ <Experiments>
+     <DefaultExperiment><![CDATA[Experiment 1]]>
+</DefaultExperiment>
+  <Experiment>
+    <Name>Experiment 1</Name>
+    <CreatedBy></CreatedBy>
+    <Info></Info>
+<ExpData>
+  <VersionNumber>4.8</VersionNumber>
+  <ModelProperties>
+    <ModelProperty section="CCodeDialog" entry="SubmodelName" value="external_tool_global"/>
+    <ModelProperty section="CCodeDialog" entry="TargetName" value="FMU 2.0 export for 20-sim submodel (GitHub)"/>
+    <ModelProperty section="CCodeDialog" entry="TargetDirectory" value="c:\temp\%SUBMODEL_NAME%_tool_3"/>
+  </ModelProperties>
+  <Variables>
+   <Parameters>
+   </Parameters>
+   <Initials>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_1_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_2_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_3_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_4_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_5_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_6_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_7_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+    <Variable>
+     <Name>robotti_global\Robotti_model\ydot_9_int_initial</Name>
+     <Value>0</Value>
+    </Variable>
+   </Initials>
+  </Variables>
+  <PlotSpecs>
+   <VarNames>
+    <VarName>time</VarName>
+    <VarName>DataFromFile2\Column_2</VarName>
+    <VarName>DataFromFile2\Column_3</VarName>
+   </VarNames>
+   <Plots>
+    <Plot>
+     <PlotType>GraphPlot</PlotType>
+     <BasePlot>
+       <PlotId>1</PlotId>
+       <UseWindowsBGColor>true</UseWindowsBGColor>
+       <BGColor>15790320</BGColor>
+       <PlotIsVisible>true</PlotIsVisible>
+     </BasePlot>
+     <Grid>
+      <DrawGrid>true</DrawGrid>
+      <GridColor>15780518</GridColor>
+      <GridBorderLineColor>12624260</GridBorderLineColor>
+      <GridZeroLineColor>0</GridZeroLineColor>
+      <XTicks>10</XTicks>
+      <YTicks>10</YTicks>
+      <ZTicks>10</ZTicks>
+      <Use3DLook>false</Use3DLook>
+     </Grid>
+     <PlotBGColor>16777215</PlotBGColor>
+     <ShowPlotTitle>false</ShowPlotTitle>
+     <TitlePosition>1</TitlePosition>
+     <PlotTitle>y_out[1,4]</PlotTitle>
+     <ShowXValues>true</ShowXValues>
+     <Fonts>
+      <TitleFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </TitleFont>
+      <LabelFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </LabelFont>
+      <ValuesFont>
+       <Name>Arial</Name>
+       <Height>10</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </ValuesFont>
+      <LegendFont>
+       <Name>Arial</Name>
+       <Height>12</Height>
+       <PitchFamily>34</PitchFamily>
+       <Weight>400</Weight>
+       <Italic>0</Italic>
+       <UnderLine>0</UnderLine>
+       <StrikeOut>0</StrikeOut>
+       <Color>0</Color>
+      </LegendFont>
+     </Fonts>
+     <SharedXAxis>true</SharedXAxis>
+     <SharedYAxis>true</SharedYAxis>
+     <SharedZAxis>false</SharedZAxis>
+     <XAxes>
+      <Axis>
+       <Minimum>-0.002974903544524762</Minimum>
+       <Maximum>32.696021260792044</Maximum>
+       <Linear>true</Linear>
+       <Scaling>3</Scaling>
+       <Label>x [m]</Label>
+      </Axis>
+     </XAxes>
+     <YAxes>
+      <Axis>
+       <Minimum>-2.0</Minimum>
+       <Maximum>18.0</Maximum>
+       <Linear>true</Linear>
+       <Scaling>1</Scaling>
+       <Label>GPS</Label>
+      </Axis>
+     </YAxes>
+     <ZAxes>
+     </ZAxes>
+     <Curves>
+      <Curve>
+       <LineColor>16711680</LineColor>
+       <LineStyle>1</LineStyle>
+       <TickColor>16711680</TickColor>
+       <TickStyle>0</TickStyle>
+       <CurveVisible>true</CurveVisible>
+       <PixelThresshold>1</PixelThresshold>
+       <LineThickness>1</LineThickness>
+       <LineOrder>1</LineOrder>
+       <ShowYValues>true</ShowYValues>
+       <XCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>DataFromFile2\Column_2</VarName>
+       </XCurveData>
+       <YCurveData>
+        <ShowUnit>true</ShowUnit>
+        <VarName>DataFromFile2\Column_3</VarName>
+       </YCurveData>
+      </Curve>
+     </Curves>
+     <Legenda>
+      <ShowLegenda>true</ShowLegenda>
+      <BorderPenColor>12624260</BorderPenColor>
+      <BackgroundColor>16777215</BackgroundColor>
+     </Legenda>
+    </Plot>
+   </Plots>
+   <PlotPanels>
+    <PlotPanel>
+     <PlotPanelId>1</PlotPanelId>
+     <PlotPanelVisible>true</PlotPanelVisible>
+     <Name>Window 1</Name>
+     <Tiling>2</Tiling>
+     <PlotIds>
+       <PlotId>1</PlotId>
+     </PlotIds>
+     <ToggleState>Base</ToggleState>
+    </PlotPanel>
+   </PlotPanels>
+   <WindowRectangles virtualDesktopWidth="1920" virtualDesktopHeight="1080">
+     <WindowRectangle monitor="0" left="0" top="0" right="1920" bottom="1080" plotpanelid="1">
+0 0 1 0.981481
+     </WindowRectangle>
+   </WindowRectangles>
+  </PlotSpecs>
+  <RunSpecs>
+   <SimulatorSettings>
+    <StartTime>0.0</StartTime>
+    <FinishTime>60.0</FinishTime>
+    <Warp>false</Warp>
+    <FPGonio>true</FPGonio>
+    <UseOutputAfterEach>true</UseOutputAfterEach>
+    <OutputAfterEach>0.1</OutputAfterEach>
+    <EventEpsilon>1.0e-6</EventEpsilon>
+    <AlgebraicTolerance>1.0e-7</AlgebraicTolerance>
+    <SteadyStateAnalysis>false</SteadyStateAnalysis>
+    <UpdateHoldInstructions>true</UpdateHoldInstructions>
+   </SimulatorSettings>
+   <IntegrationMethods>
+    <IntegrationMethod>
+     <Name>Euler</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>BackwardEuler</Name>
+     <AbsoluteTolerance>1.0e-5</AbsoluteTolerance>
+     <RelativeTolerance>1.0e-5</RelativeTolerance>
+     <AlgebraicAbsoluteTolerance>1.0e-5</AlgebraicAbsoluteTolerance>
+     <AlgebraicRelativeTolerance>1.0e-5</AlgebraicRelativeTolerance>
+     <StepSize>0.01</StepSize>
+     <Alpha>1.0</Alpha>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>AdamsBashforth</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKutta2</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKutta4</Name>
+     <StepSize>0.01</StepSize>
+     <AutoStepSize>false</AutoStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKutta8</Name>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0.0</InitialStepSize>
+     <UseMaximumStepSize>false</UseMaximumStepSize>
+     <MaximumStepSize>0.0</MaximumStepSize>
+     <AbsoluteTolerance>1.0e-6</AbsoluteTolerance>
+     <RelativeTolerance>1.0e-6</RelativeTolerance>
+     <SafetyFactor>0.9</SafetyFactor>
+     <Factor1>0.33</Factor1>
+     <Factor2>6.0</Factor2>
+     <Beta>0.0</Beta>
+     <UseMaxNrSteps>false</UseMaxNrSteps>
+     <MaxNrSteps>100000</MaxNrSteps>
+     <UseStiffDetection>false</UseStiffDetection>
+     <MaxNrStiffnessSteps>1000</MaxNrStiffnessSteps>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>RungeKuttaFehlberg</Name>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0.0</InitialStepSize>
+     <UseMaximumStepSize>false</UseMaximumStepSize>
+     <MaximumStepSize>0.0</MaximumStepSize>
+     <AbsoluteTolerance>1.0e-6</AbsoluteTolerance>
+     <RelativeTolerance>1.0e-6</RelativeTolerance>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>VodeAdams</Name>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0.0</InitialStepSize>
+     <UseMaximumStepSize>false</UseMaximumStepSize>
+     <MaximumStepSize>0.0</MaximumStepSize>
+     <AbsoluteTolerance>1.0e-6</AbsoluteTolerance>
+     <RelativeTolerance>1.0e-6</RelativeTolerance>
+     <VodeUseBDF>true</VodeUseBDF>
+     <VodeUseNewton>true</VodeUseNewton>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>BDFMethod</Name>
+     <AbsoluteTolerance>1.0e-5</AbsoluteTolerance>
+     <RelativeTolerance>1.0e-5</RelativeTolerance>
+     <AlgebraicAbsoluteTolerance>1.0e-5</AlgebraicAbsoluteTolerance>
+     <AlgebraicRelativeTolerance>1.0e-5</AlgebraicRelativeTolerance>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0.0</InitialStepSize>
+     <UseMaximumStepSize>true</UseMaximumStepSize>
+     <MaximumStepSize>0.1</MaximumStepSize>
+    </IntegrationMethod>
+    <IntegrationMethod>
+     <Name>MeBDFiMethod</Name>
+     <AbsoluteTolerance>1.0e-5</AbsoluteTolerance>
+     <RelativeTolerance>1.0e-5</RelativeTolerance>
+     <AlgebraicAbsoluteTolerance>1.0e-5</AlgebraicAbsoluteTolerance>
+     <AlgebraicRelativeTolerance>1.0e-5</AlgebraicRelativeTolerance>
+     <UseInitialStepSize>false</UseInitialStepSize>
+     <InitialStepSize>0.0</InitialStepSize>
+     <UseMaximumStepSize>true</UseMaximumStepSize>
+     <MaximumStepSize>0.1</MaximumStepSize>
+    </IntegrationMethod>
+    <SelectedIntegrationMethod>9</SelectedIntegrationMethod>
+   </IntegrationMethods>
+  </RunSpecs>
+  <MultipleRun>
+   <NrSteps>10</NrSteps>
+   <CopyFromStates>false</CopyFromStates>
+   <JoinParameterVariation>true</JoinParameterVariation>
+   <ClearAfterRun>false</ClearAfterRun>
+   <RedrawAfterRun>false</RedrawAfterRun>
+   <DrawDuringSimulation>true</DrawDuringSimulation>
+   <ActionBeforeOptimization>2</ActionBeforeOptimization>
+   <CompareValue>0.0</CompareValue>
+   <UseCompareValue>false</UseCompareValue>
+   <MultipleRunType>MultipleRun</MultipleRunType>
+   <Minimize>true</Minimize>
+   <OptimizationVariable>SignalMonitor\input_x</OptimizationVariable>
+   <CompareVariable>SignalMonitor\input_y</CompareVariable>
+   <ResulVarUsage>UseEndValue</ResulVarUsage>
+   <Tolerance>0.001</Tolerance>
+   <OptimizationMethod>DavidsonFletcherPowell</OptimizationMethod>
+   <MultipleRunVariables>
+   </MultipleRunVariables>
+  </MultipleRun>
+  <ExportData>
+   <WriteAsText>true</WriteAsText>
+   <ReadAsText>true</ReadAsText>
+   <WriteHeader>true</WriteHeader>
+   <ReadHeader>true</ReadHeader>
+   <ReadFilename></ReadFilename>
+   <WriteFilename></WriteFilename>
+   <DoWrite>false</DoWrite>
+   <ExportVariables>
+   </ExportVariables>
+   <ImportVariables>
+   </ImportVariables>
+  </ExportData>
+  <BreakPoints>
+  </BreakPoints>
+</ExpData>
+  </Experiment>
+</Experiments>
+</Document>

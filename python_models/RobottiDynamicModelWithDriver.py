@@ -1,5 +1,6 @@
 from oomodelling.Model import Model
 
+from DriverDynamic import DriverDynamic
 from RobottiDriver import RobottiDriver
 from RobottiDynamicModel import RobottiDynamicModel
 
@@ -9,7 +10,7 @@ class RobottiDynamicModelWithDriver(Model):
     def __init__(self):
         super().__init__()
 
-        self.driver = RobottiDriver()
+        self.driver = DriverDynamic()
         self.rbike = RobottiDynamicModel()
 
         self.rbike.deltaFl = self.driver.steering
