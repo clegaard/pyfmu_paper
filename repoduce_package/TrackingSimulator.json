@@ -1,0 +1,38 @@
+{
+	"fmus": {
+		"{src}": "file:///C:/Users/clega/Desktop/pyfmu/tracking_simulator_results/fmus/BicycleDriver.fmu",
+		"{bd}": "file:///C:/Users/clega/Desktop/pyfmu/tracking_simulator_results/fmus/BicycleDynamic.fmu",
+		"{track}": "file:///C:/Users/clega/Desktop/pyfmu/tracking_simulator_results/fmus/BicycleTracking.fmu"
+	},
+	"connections": {
+		"{src}.srci.deltaf": [
+			"{bd}.bdi.deltaf",
+			"{track}.tracki.deltaf"
+		],
+		"{src}.srci.Caf": [
+			"{bd}.bdi.Caf"
+		],
+		"{bd}.bdi.X": [
+			"{track}.tracki.to_track_X"
+		],
+		"{bd}.bdi.Y": [
+			"{track}.tracki.to_track_Y"
+		]
+	},
+	"logVariables": {
+		"{track}.tracki": [
+			"X",
+			"Y",
+			"tolerance",
+			"error",
+			"Caf"
+		]
+	},
+	"parameters": {},
+	"algorithm": {
+		"type": "fixed-step",
+		"size": 0.01
+	},
+	"loggingOn": true,
+	"overrideLogLevel": "DEBUG"
+}
