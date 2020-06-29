@@ -8,11 +8,14 @@ pyfmu export --project .\examples\projects\BicycleTracking --output .\examples\e
 
 Pop-Location
 
-Remove-Item -Force coe.log
+Remove-Item -Force .\coe.log
+Remove-Item -Force .\output.csv
 
-$Config = ".\tracking_scenario.json"
+$Config = ".\tracking_scenario_pyfmu.json"
 # $Config = ".\bycicle_driver_scenario.json"
+# $Config = ".\tracking_scenario_open_modelica.json"
+# $Config = ".\bycicle_driver_scenario_openmodelica.json"
 
-java -jar "D:\srcctrl\github\maestro\orchestration\coe\target\coe-1.0.11-SNAPSHOT-jar-with-dependencies.jar" -v --configuration "$Config" --oneshot --starttime 0.0 --endtime 25.0
+java -jar "D:\srcctrl\github\maestro\orchestration\coe\target\coe-1.0.11-SNAPSHOT-jar-with-dependencies.jar" -v --configuration "$Config" --oneshot --starttime 0.0 --endtime 25.0 -v
 
 python .\plot.py

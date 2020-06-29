@@ -37,27 +37,27 @@ initial equation
   X = 0.0;
   Y = 0.0;
   dpsi = dpsi0;
-  vx = 1.0;
+  vx = vx0;
   vy = vy0;
   psi = psi0;
 equation
-  der(x) = vx;
-  der(y) = vy;
-  der(psi) = dpsi;
+  der(x) = 0.0;
+  der(y) = 0.0;
+  der(psi) = 0.0;
   
-  der(vx) = dpsi*vy + a;
+  der(vx) = 0.0;
   
-  der(vy) = -dpsi*vx + (1/m)*(Fcf * cos(deltaf) + Fcr);
-  der(dpsi) = (2/Iz)*(lf*Fcf - lr*Fcr);
+  der(vy) = 0.0;
+  der(dpsi) = 0.0;
   
-  der(X) = vx*cos(psi) - vy*sin(psi);
-  der(Y) = vx*sin(psi) + vy*cos(psi);
+  der(X) = 0.0;
+  der(Y) = 0.0;
   
-  Fcf = Caf*af;
-  Fcr = Car*(-ar);
+  Fcf = 0.0;
+  Fcr = 0.0;
   
   // Adapted from https://vtechworks.lib.vt.edu/bitstream/handle/10919/36615/Chapter2a.pdf
-  af = deltaf - ( vy + lf*dpsi)/vx;
-  ar = (vy - lr*dpsi)/vx;
+  af = 0.0;
+  ar = 0.0;
   
 end BikeDynamicModel;

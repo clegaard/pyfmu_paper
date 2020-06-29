@@ -1,0 +1,26 @@
+{
+	"fmus":{
+		"{src}":"file:/D:/srcctrl/github/pyfmu/examples/exported/BicycleDriver",
+		"{bd}":"file:/D:/srcctrl/github/pyfmu_paper/tracking_cosimulation/BikeDynamicModel.fmu"
+	},
+	"connections": {
+		"{src}.srci.deltaf": [
+      "{bd}.bdi.deltaf"
+    ],
+		"{src}.srci.Caf": [
+      "{bd}.bdi.Caf"
+    ]
+	},
+	"logVariables":{
+		"{bd}.bdi":["X", "Y"]
+	},
+  "parameters": {},
+	"algorithm":{
+		"type":"fixed-step",
+		"size":0.01
+	},
+	"visible": true,
+	"loggingOn": true,
+	"overrideLogLevel": "TRACE",
+	"enableAllLogCategoriesPerInstance": true
+}

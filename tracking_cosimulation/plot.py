@@ -10,14 +10,17 @@ p1.plot(input["time"], input["{src}.srci.deltaf"],
 p1.legend()
 p2.plot(input['{bd}.bdi.X'], input['{bd}.bdi.Y'],
             label='dX vs dY')
-p2.plot(input['{track}.tracki.X'], input['{track}.tracki.Y'], label='~dX vs ~dY')
+if "{track}.tracki.X" in input.keys():
+  p2.plot(input['{track}.tracki.X'], input['{track}.tracki.Y'], label='~dX vs ~dY')
 # for calib in m.tracking.recalibration_history:
 #     p2.plot(calib.xs[m.tracking.X_idx, :], calib.xs[m.tracking.Y_idx, :], '--', label='recalibration')
 p2.legend()
-p3.plot(input['time'], input['{track}.tracki.error'], label='error')
-p3.plot(input['time'], input['{track}.tracki.tolerance'], label='tolerance')
-p3.legend()
+if "{track}.tracki.error" in input.keys():
+  p3.plot(input['time'], input['{track}.tracki.error'], label='error')
+  p3.plot(input['time'], input['{track}.tracki.tolerance'], label='tolerance')
+  p3.legend()
 p4.plot(input['time'], input['{src}.srci.Caf'], label='real_Caf')
-p4.plot(input['time'], input['{track}.tracki.Caf'], label='approx_Caf')
+if "{track}.tracki.Caf" in input.keys():
+  p4.plot(input['time'], input['{track}.tracki.Caf'], label='approx_Caf')
 p4.legend()
 plt.show()
