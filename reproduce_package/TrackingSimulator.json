@@ -1,8 +1,8 @@
 {
 	"fmus": {
-		"{src}": "file:///C:/Users/clega/Desktop/pyfmu/tracking_simulator_results/fmus/BicycleDriver.fmu",
-		"{bd}": "file:///C:/Users/clega/Desktop/pyfmu/tracking_simulator_results/fmus/BicycleDynamic.fmu",
-		"{track}": "file:///C:/Users/clega/Desktop/pyfmu/tracking_simulator_results/fmus/BicycleTracking.fmu"
+		"{src}": "file:///C:/Users/clega/Desktop/pyfmu_paper/reproduce_package/fmus/BicycleDriver.fmu",
+		"{bd}": "file:///C:/Users/clega/Desktop/pyfmu_paper/reproduce_package/fmus/BicycleDynamic.fmu",
+		"{track}": "file:///C:/Users/clega/Desktop/pyfmu_paper/reproduce_package/fmus/BicycleTracking.fmu"
 	},
 	"connections": {
 		"{src}.srci.deltaf": [
